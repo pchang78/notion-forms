@@ -14,105 +14,121 @@ function notion_forms_main_page() {
     );
 
     ?>
+
     <div class="wrap">
         <h1>Notion Forms</h1>
 
         <!-- Refresh Fields Form -->
-        <form method="post">
+        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+            <input type="hidden" name="action" value="notion_forms_action">
             <input type="hidden" name="notion_forms_action" value="refresh_fields">
             <?php submit_button('Refresh Fields'); ?>
         </form>
 
-        <!-- Available Fields Section -->
-        <h2>Available Fields</h2>
-        <?php if (!empty($available_fields)) : ?>
-            <table class="widefat striped">
-                <thead>
-                    <tr>
-                        <th>Field Name</th>
-                        <th>Field Type</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($available_fields as $field) : ?>
-                        <tr>
-                            <td><?php echo esc_html($field->name); ?></td>
-                            <td><?php echo esc_html($field->field_type); ?></td>
-                            <td>
-                                <form method="post" style="display:inline;">
-                                    <input type="hidden" name="notion_forms_action" value="activate_field">
-                                    <input type="hidden" name="field_id" value="<?php echo esc_attr($field->id); ?>">
-                                    <?php submit_button('Activate', 'secondary', '', false); ?>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else : ?>
-            <p>No available fields.</p>
-        <?php endif; ?>
+        <div id="notion-forms-wrapper">
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+            <input type="hidden" name="action" value="notion_forms_action">
+            <input type="hidden" name="notion_forms_action" value="save_form">
+            <input type="hidden" name="field_order" value="" id="notion_forms_field_order">
+            <!-- Available Fields -->
+            <h2>Available Fields</h2>
+            <ul id="available-fields" class="notion-forms-list drop-area">
+                <?php foreach ($available_fields as $field): ?>
+                    <li class="notion-field-item" data-id="<?php echo esc_attr($field->id); ?>" draggable="true">
+                        <input type="hidden" name="field[<?php echo esc_attr($field->id); ?>][is_active]" value="0" id="is_active<?php echo esc_attr($field->id); ?>">
+                        <?php echo esc_html($field->name); ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
 
-        <!-- Form Section -->
-        <h2>Form</h2>
-        <?php if (!empty($form_fields)) : ?>
-            <table class="widefat striped">
-                <thead>
-                    <tr>
-                        <th>Field Name</th>
-                        <th>Field Type</th>
-                        <th>Order</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($form_fields as $field) : ?>
-                        <tr>
-                            <td><?php echo esc_html($field->name); ?></td>
-                            <td><?php echo esc_html($field->field_type); ?></td>
-                            <td><?php echo esc_html($field->order_num); ?></td>
-                            <td>
-                                <form method="post" style="display:inline;">
-                                    <input type="hidden" name="notion_forms_action" value="deactivate_field">
-                                    <input type="hidden" name="field_id" value="<?php echo esc_attr($field->id); ?>">
-                                    <?php submit_button('Deactivate', 'secondary', '', false); ?>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else : ?>
-            <p>No fields in the form.</p>
-        <?php endif; ?>
+            <h2>Form Fields</h2>
+            <ul id="form-fields" class="notion-forms-list drop-area">
+                <?php foreach ($form_fields as $field): ?>
+                    <li class="notion-field-item" data-id="<?php echo esc_attr($field->id); ?>" draggable="true">
+                        <input type="hidden" name="field[<?php echo esc_attr($field->id); ?>][is_active]" value="1" id="is_active<?php echo esc_attr($field->id); ?>">
+                        <?php echo esc_html($field->name); ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php submit_button('Save Form', 'primary', 'submit', true, 'style="float: right;"'); ?>
+            </form>
+        </div>
     </div>
+
     <?php
 }
 
 // Handle form actions.
 function notion_forms_handle_post() {
-    echo "Patrick";
-    if (!isset($_POST['notion_forms_action']) || !isset($_POST['field_id'])) {
+    if (!isset($_POST['notion_forms_action'])) {
         return;
     }
     global $wpdb;
     $table_name = $wpdb->prefix . 'notion_forms';
     $action = sanitize_text_field($_POST['notion_forms_action']);
-    $field_id = intval($_POST['field_id']);
+    if ($action === 'refresh_fields') {
+        notion_forms_refresh_fields();
+        wp_safe_redirect(add_query_arg('notion_refresh', 'success', $_SERVER['HTTP_REFERER']));
+        exit;
+    } 
+    elseif ($action === 'save_form') {
+        /*
+        echo "<pre>";
+        print_r($_POST);
+        echo "</pre>";
+        */
+        notion_forms_save_form();
+        wp_safe_redirect(add_query_arg('notion_refresh', 'save_form', $_SERVER['HTTP_REFERER']));
+        exit;
+    }
+    wp_safe_redirect($_SERVER['HTTP_REFERER']);
+    exit;
+}
+add_action('admin_post_notion_forms_action', 'notion_forms_handle_post');
 
-    if ($action === 'activate_field') {
-        $wpdb->update(
+
+function notion_forms_admin_notices() {
+    if (isset($_GET['notion_refresh']) && $_GET['notion_refresh'] === 'success') {
+        ?>
+        <div class="notice notice-success is-dismissible">
+            <p><?php _e('Fields refreshed successfully!', 'notion-forms'); ?></p>
+        </div>
+        <?php
+    }
+    elseif (isset($_GET['notion_refresh']) && $_GET['notion_refresh'] === 'save_form') {
+        ?>
+        <div class="notice notice-success is-dismissible">
+            <p><?php _e('Form Saved!', 'notion-forms'); ?></p>
+        </div>
+        <?php
+    }
+}
+add_action('admin_notices', 'notion_forms_admin_notices');
+
+
+function notion_forms_save_form() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'notion_forms';
+    foreach ($_POST['field'] as $field_id => $field) {
+        $field_id = intval($field_id);
+        $is_active = intval($field['is_active']);
+        $update_result = $wpdb->update(
             $table_name,
-            ['is_active' => 1, 'order_num' => 0],
-            ['id' => $field_id]
-        );
-    } elseif ($action === 'deactivate_field') {
-        $wpdb->update(
-            $table_name,
-            ['is_active' => 0, 'order_num' => 0],
+            ['is_active' => $is_active], // Default order number for active
             ['id' => $field_id]
         );
     }
+    if(isset($_POST['field_order']) && $_POST['field_order']) {
+        $arrFields = explode(",", $_POST['field_order']);
+        foreach ($arrFields AS $index => $field_id) {
+            $field_id = intval($field_id);
+            $order_num = $index + 1;
+            $update_result = $wpdb->update(
+                $table_name,
+                ['order_num' => $order_num], // Default order number for active
+                ['id' => $field_id]
+            );
+        }
+    }
 }
-add_action('admin_post_notion_forms_action', 'notion_forms_handle_post');
+

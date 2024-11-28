@@ -1,0 +1,39 @@
+.notion-forms-list {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 100px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+
+.notion-forms-list.highlight {
+    border-color: #007cba;
+    background-color: #e7f4fc;
+}
+
+.notion-field-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    list-style: none;
+    cursor: move;
+    user-select: none;
+}
+
+.notion-field-item:hover {
+    background-color: #f1f1f1;
+}
+
+.notion-forms-list .ui-sortable-placeholder {
+    border: 2px dashed #007cba;
+    height: 40px;
+    margin-bottom: 5px;
+}
+
+.sortable-placeholder {
+    background-color: #f0f0f0;
+    border: 2px dashed #ccc;
+    height: 40px;
+    margin: 5px 0;
+}

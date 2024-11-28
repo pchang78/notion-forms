@@ -1,0 +1,38 @@
+.notion-forms-list {
+    border: 2px dashed #ccc;
+    min-height: 100px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    list-style: none;
+    margin: 20px 0;
+}
+
+.notion-forms-list.drop-area:hover {
+    border-color: #007cba;
+    background-color: #eef6ff;
+}
+
+.notion-field-item {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: grab;
+}
+
+.notion-field-item:active {
+    cursor: grabbing;
+}
+
+.placeholder {
+    color: #aaa;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Highlight drop area during drag-over */
+.notion-forms-list.highlight {
+    border-color: #007cba;
+    background-color: #e6f7ff;
+}
