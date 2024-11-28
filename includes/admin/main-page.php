@@ -17,46 +17,65 @@ function notion_forms_main_page() {
 
     <div class="wrap">
         <h1>Notion Forms</h1>
-
         <!-- Refresh Fields Form -->
         <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
             <input type="hidden" name="action" value="notion_forms_action">
             <input type="hidden" name="notion_forms_action" value="refresh_fields">
             <?php submit_button('Refresh Fields'); ?>
         </form>
-
-        <div id="notion-forms-wrapper">
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-            <input type="hidden" name="action" value="notion_forms_action">
-            <input type="hidden" name="notion_forms_action" value="save_form">
-            <input type="hidden" name="field_order" value="" id="notion_forms_field_order">
-            <!-- Available Fields -->
-            <h2>Available Fields</h2>
-            <ul id="available-fields" class="notion-forms-list drop-area">
-                <?php foreach ($available_fields as $field): ?>
-                    <li class="notion-field-item" data-id="<?php echo esc_attr($field->id); ?>" draggable="true">
-                        <input type="hidden" name="field[<?php echo esc_attr($field->id); ?>][is_active]" value="0" id="is_active<?php echo esc_attr($field->id); ?>">
-                        <?php echo esc_html($field->name); ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-
-            <h2>Form Fields</h2>
-            <ul id="form-fields" class="notion-forms-list drop-area">
-                <?php foreach ($form_fields as $field): ?>
-                    <li class="notion-field-item" data-id="<?php echo esc_attr($field->id); ?>" draggable="true">
-                        <input type="hidden" name="field[<?php echo esc_attr($field->id); ?>][is_active]" value="1" id="is_active<?php echo esc_attr($field->id); ?>">
-                        <?php echo esc_html($field->name); ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-            <?php submit_button('Save Form', 'primary', 'submit', true, 'style="float: right;"'); ?>
-            </form>
+        <div class="wp-clearfix">
+            <div id="notion-forms-wrapper">
+                <div class="postbox-container" style="width: 25%; float: left; margin-right: 2%;">
+                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                    <input type="hidden" name="action" value="notion_forms_action">
+                    <input type="hidden" name="notion_forms_action" value="save_form">
+                    <input type="hidden" name="field_order" value="" id="notion_forms_field_order">
+                    <!-- Available Fields -->
+                    <h2>Available Fields</h2>
+                    <ul id="available-fields" class="notion-forms-list drop-area">
+                        <?php foreach ($available_fields as $field): ?>
+				<?php notion_forms_the_field_item($field); ?>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <div class="postbox-container" style="width: 60%; float: left;">
+                    <h2>Form Fields</h2>
+                    <ul id="form-fields" class="notion-forms-list drop-area">
+                        <?php foreach ($form_fields as $field): ?>
+				<?php notion_forms_the_field_item($field, true); ?>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php submit_button('Save Form', 'primary', 'submit', true, 'style="float: right;"'); ?>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-
     <?php
 }
+
+function notion_forms_the_field_item($field, $active = false) {
+
+	if($active) {
+		$active_val = 1;
+	}
+	else {
+		$active_val = 0;
+	}
+
+
+?>
+                            <li class="notion-field-item" data-id="<?php echo esc_attr($field->id); ?>" draggable="true">
+                                <input type="hidden" name="field[<?php echo esc_attr($field->id); ?>][is_active]" value="<?php echo $active_val; ?>" id="is_active<?php echo esc_attr($field->id); ?>">
+                                <?php echo esc_html($field->name); ?>
+                                <small> <?php echo esc_html($field->field_type); ?> </small>
+                            </li>
+
+<?php
+}
+
+
+
 
 // Handle form actions.
 function notion_forms_handle_post() {

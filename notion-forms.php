@@ -51,8 +51,7 @@ add_action('admin_menu', 'notion_forms_register_menu');
 function notion_forms_enqueue_scripts($hook) {
     if ($hook === 'toplevel_page_notion-forms') {
         wp_enqueue_script('jquery-ui-sortable');
-	wp_enqueue_script('jquery-ui-touch-punch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array('jquery-ui-sortable'), '0.2.3', true);
-
+        wp_enqueue_script('jquery-ui-touch-punch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array('jquery-ui-sortable'), '0.2.3', true);
 
         wp_enqueue_script(
             'notion-forms-drag-drop',
@@ -62,17 +61,12 @@ function notion_forms_enqueue_scripts($hook) {
             true
         );
 
-        wp_enqueue_style(
-            'notion-forms-style',
-            plugins_url('css/notion-forms-style.css', __FILE__)
-        );
-
+        wp_enqueue_style('wp-admin');  // Ensures WordPress admin styling
+        wp_enqueue_style( 'notion-forms-style', plugins_url('css/notion-forms-style.css', __FILE__));
 
     }
 }
 add_action('admin_enqueue_scripts', 'notion_forms_enqueue_scripts');
-
-
 
 function notion_forms_enqueue_styles() {
     // Only load the CSS on the Notion Forms admin pages
