@@ -51,6 +51,9 @@ add_action('admin_menu', 'notion_forms_register_menu');
 function notion_forms_enqueue_scripts($hook) {
     if ($hook === 'toplevel_page_notion-forms') {
         wp_enqueue_script('jquery-ui-sortable');
+	wp_enqueue_script('jquery-ui-touch-punch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array('jquery-ui-sortable'), '0.2.3', true);
+
+
         wp_enqueue_script(
             'notion-forms-drag-drop',
             plugins_url('js/notion-forms-drag-drop.js', __FILE__),
