@@ -20,6 +20,7 @@ require_once NOTION_FORMS_PATH . 'includes/admin/settings-page.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/refresh-fields.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/main-page.php';
 require_once NOTION_FORMS_PATH . 'includes/db/create-table.php';
+require_once NOTION_FORMS_PATH . 'includes/frontend-form.php';
 
 // Register activation hook to create the database table.
 register_activation_hook(__FILE__, 'notion_forms_create_table');
