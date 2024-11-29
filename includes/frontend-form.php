@@ -25,7 +25,15 @@ function notion_form_shortcode() {
         $html .= '<div class="form-group">';
         $html .= "<label for='$field_id'>$label</label>";
 
-        if ($field->field_type === 'rich_text' && $field->field_attr === 'textarea') {
+        if ($field->field_type === 'select') {
+            $arrOptions = explode("|", $field->field_attr);
+            $select_options = "";
+            foreach($arrOptions AS $option) {
+                $select_options .= "<option value='$option'>$option</option>";
+            }
+            $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
+        }
+        elseif ($field->field_type === 'rich_text' && $field->field_attr === 'textarea') {
             $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
         } elseif ($field->field_type === 'phone_number') {
             $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
@@ -73,6 +81,9 @@ function notion_form_handle_submission($fields, $form_data) {
                     $properties[$field->name] = [
                         'rich_text' => [['text' => ['content' => $value]]],
                     ];
+                    break;
+                case 'select':
+                    $properties[$field->name] = ['select' => ['name' => $value]];
                     break;
                 case 'phone_number':
                     $properties[$field->name] = ['phone_number' => $value];

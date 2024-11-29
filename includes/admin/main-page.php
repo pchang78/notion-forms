@@ -165,20 +165,15 @@ function notion_forms_save_form() {
             $required = 0;
         }
 
-
         if(isset($field['field_attr']) && $field['field_attr']) {
             $field_attr = $field['field_attr'];
+            $update_result = $wpdb->update( $table_name, ['is_active' => $is_active, 'required' => $required, 'field_attr' => $field_attr], ['id' => $field_id]);
         }
         else {
-            $field_attr = "";
+            $update_result = $wpdb->update( $table_name, ['is_active' => $is_active, 'required' => $required ], ['id' => $field_id]);
         }
 
 
-        $update_result = $wpdb->update(
-            $table_name,
-            ['is_active' => $is_active, 'required' => $required, 'field_attr' => $field_attr], 
-            ['id' => $field_id]
-        );
     }
     if(isset($_POST['field_order']) && $_POST['field_order']) {
         $arrFields = explode(",", $_POST['field_order']);

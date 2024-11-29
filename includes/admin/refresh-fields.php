@@ -62,30 +62,39 @@ function notion_forms_refresh_fields() {
             $wpdb->prepare("SELECT id FROM $table_name WHERE column_id = %s", $column_id)
         );
 
-        if ($existing_entry) {
-            // Update the entry.
-            $wpdb->update(
-                $table_name,
-                [
-                    'name'       => $field['name'],
-                    'field_type' => $field['type'],
-                ],
-                ['column_id' => $column_id]
-            );
-        } else {
-            // Insert new entry.
-            $wpdb->insert(
-                $table_name,
-                [
-                    'column_id'  => $column_id,
-                    'name'       => $field['name'],
-                    'field_type' => $field['type'],
-                    'required'   => 0,
-                    'is_active'  => 0,
-                    'order_num'  => 0,
-                ]
-            );
+        switch($field['type']) {
+            case "select":
+                $arrOptions = array();
+                foreach($field['select']['options'] AS $option) {
+                    $arrOptions[] = $option['name'];
+                }
+                $field_attr = implode("|", $arrOptions);
+
+
+                if ($existing_entry) {
+                    $wpdb->update($table_name, [ 'name' => $field['name'], 'field_type' => $field['type'], 'field_attr' => $field_attr, ], ['column_id' => $column_id]);
+                } else {
+                    $wpdb->insert($table_name, [ 'column_id'  => $column_id, 'name' => $field['name'], 'field_type' => $field['type'], 'field_attr' => $field_attr, 'required' => 0, 'is_active'  => 0, 'order_num' => 0 ]);
+                }
+
+                break;
+
+            default:
+
+                if ($existing_entry) {
+                    $wpdb->update($table_name, [ 'name' => $field['name'], 'field_type' => $field['type'] ], ['column_id' => $column_id]);
+                } else {
+                    $wpdb->insert($table_name, [ 'column_id'  => $column_id, 'name' => $field['name'], 'field_type' => $field['type'], 'required' => 0, 'is_active'  => 0, 'order_num' => 0 ]);
+                }
+
+
+                break;
         }
+
+
+
+
+
     }
 
     // Delete entries that are no longer in the Notion data.
