@@ -28,6 +28,12 @@ jQuery(document).ready(function ($) {
             // Determine if the field was moved between lists
             if (sourceId !== targetId) {
                 const isActive = targetId === 'form-fields' ? 1 : 0;
+                if(isActive) {
+                    $(this).find('.attributes').removeClass('hidden');
+                }
+                else {
+                    $(this).find('.attributes').addClass('hidden');
+                }
                 $("#is_active" + fieldId).val(isActive);
                 var serializedOrder = $("#form-fields").children('li').map(function() {
                     return $(this).data('id');

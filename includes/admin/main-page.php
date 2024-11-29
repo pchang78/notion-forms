@@ -36,6 +36,7 @@ function notion_forms_main_page() {
                         <?php foreach ($available_fields as $field): ?>
 				<?php notion_forms_the_field_item($field); ?>
                         <?php endforeach; ?>
+
                     </ul>
                 </div>
                 <div class="postbox-container" style="width: 60%; float: left;">
@@ -44,6 +45,7 @@ function notion_forms_main_page() {
                         <?php foreach ($form_fields as $field): ?>
 				<?php notion_forms_the_field_item($field, true); ?>
                         <?php endforeach; ?>
+
                     </ul>
                     <?php submit_button('Save Form', 'primary', 'submit', true, 'style="float: right;"'); ?>
                     </form>
@@ -54,27 +56,35 @@ function notion_forms_main_page() {
     <?php
 }
 
+// Render individual field items
 function notion_forms_the_field_item($field, $active = false) {
-
 	if($active) {
 		$active_val = 1;
+        $hide = "";
 	}
 	else {
 		$active_val = 0;
+        $hide = "hidden";
 	}
-
-
+    if($field->required) {
+        $checked = "CHECKED";
+    }
+    else {
+        $checked = "";
+    }
 ?>
+
                             <li class="notion-field-item" data-id="<?php echo esc_attr($field->id); ?>" draggable="true">
                                 <input type="hidden" name="field[<?php echo esc_attr($field->id); ?>][is_active]" value="<?php echo $active_val; ?>" id="is_active<?php echo esc_attr($field->id); ?>">
-                                <?php echo esc_html($field->name); ?>
-                                <small> <?php echo esc_html($field->field_type); ?> </small>
+                                <p>
+                                    <?php echo esc_html($field->name); ?> <small> <?php echo esc_html($field->field_type); ?> </small>
+                                </p>
+                                <p class="attributes <?php echo $hide; ?>">
+                                    <input type="checkbox" name="field[<?php echo esc_attr($field->id); ?>][required]" value="1" id="required<?php echo esc_attr($field->id); ?>" <?php echo $checked; ?>> Required
+                                </p>
                             </li>
-
 <?php
 }
-
-
 
 
 // Handle form actions.
@@ -95,6 +105,7 @@ function notion_forms_handle_post() {
         echo "<pre>";
         print_r($_POST);
         echo "</pre>";
+        exit;
         */
         notion_forms_save_form();
         wp_safe_redirect(add_query_arg('notion_refresh', 'save_form', $_SERVER['HTTP_REFERER']));
@@ -131,9 +142,16 @@ function notion_forms_save_form() {
     foreach ($_POST['field'] as $field_id => $field) {
         $field_id = intval($field_id);
         $is_active = intval($field['is_active']);
+
+        if(isset($field['required']) && $field['required']) {
+            $required = 1;
+        }
+        else {
+            $required = 0;
+        }
         $update_result = $wpdb->update(
             $table_name,
-            ['is_active' => $is_active], // Default order number for active
+            ['is_active' => $is_active, 'required' => $required], 
             ['id' => $field_id]
         );
     }
@@ -144,7 +162,7 @@ function notion_forms_save_form() {
             $order_num = $index + 1;
             $update_result = $wpdb->update(
                 $table_name,
-                ['order_num' => $order_num], // Default order number for active
+                ['order_num' => $order_num], 
                 ['id' => $field_id]
             );
         }
