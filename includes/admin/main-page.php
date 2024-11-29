@@ -24,9 +24,9 @@ function notion_forms_main_page() {
             <?php submit_button('Refresh Fields'); ?>
         </form>
         <div class="wp-clearfix">
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
             <div id="notion-forms-wrapper">
                 <div class="postbox-container" style="width: 25%; float: left; margin-right: 2%;">
-                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
                     <input type="hidden" name="action" value="notion_forms_action">
                     <input type="hidden" name="notion_forms_action" value="save_form">
                     <input type="hidden" name="field_order" value="" id="notion_forms_field_order">
@@ -34,7 +34,7 @@ function notion_forms_main_page() {
                     <h2>Available Fields</h2>
                     <ul id="available-fields" class="notion-forms-list drop-area">
                         <?php foreach ($available_fields as $field): ?>
-				<?php notion_forms_the_field_item($field); ?>
+                            <?php notion_forms_the_field_item($field); ?>
                         <?php endforeach; ?>
 
                     </ul>
@@ -43,14 +43,14 @@ function notion_forms_main_page() {
                     <h2>Form Fields</h2>
                     <ul id="form-fields" class="notion-forms-list drop-area">
                         <?php foreach ($form_fields as $field): ?>
-				<?php notion_forms_the_field_item($field, true); ?>
+                            <?php notion_forms_the_field_item($field, true); ?>
                         <?php endforeach; ?>
 
                     </ul>
                     <?php submit_button('Save Form', 'primary', 'submit', true, 'style="float: right;"'); ?>
-                    </form>
                 </div>
             </div>
+            </form>
         </div>
     </div>
     <?php
@@ -81,6 +81,21 @@ function notion_forms_the_field_item($field, $active = false) {
                                 </p>
                                 <p class="attributes <?php echo $hide; ?>">
                                     <input type="checkbox" name="field[<?php echo esc_attr($field->id); ?>][required]" value="1" id="required<?php echo esc_attr($field->id); ?>" <?php echo $checked; ?>> Required
+                                    <br>
+<?php 
+    if($field->field_type == "rich_text") :
+?>
+                                    <label for="field_attr<?php echo esc_attr($field->id); ?>">
+                                    Field Type:
+                                    <select name="field[<?php echo esc_attr($field->id); ?>][field_attr]" id="field_attr<?php echo esc_attr($field->id); ?>">
+                                        <option value="text" <?php if($field->field_attr == "text") echo "selected"; ?>>Text</option>
+                                        <option value="textarea" <?php if($field->field_attr == "textarea") echo "selected"; ?>>Textarea</option>
+                                    </select> 
+                                    </label>
+<?php
+    endif;
+?>
+
                                 </p>
                             </li>
 <?php
@@ -149,9 +164,19 @@ function notion_forms_save_form() {
         else {
             $required = 0;
         }
+
+
+        if(isset($field['field_attr']) && $field['field_attr']) {
+            $field_attr = $field['field_attr'];
+        }
+        else {
+            $field_attr = "";
+        }
+
+
         $update_result = $wpdb->update(
             $table_name,
-            ['is_active' => $is_active, 'required' => $required], 
+            ['is_active' => $is_active, 'required' => $required, 'field_attr' => $field_attr], 
             ['id' => $field_id]
         );
     }

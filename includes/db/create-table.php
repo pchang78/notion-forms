@@ -12,6 +12,7 @@ function notion_forms_create_table() {
         column_id VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
         field_type VARCHAR(100) NOT NULL,
+        field_attr VARCHAR(255) NOT NULL,
         required TINYINT(1) DEFAULT 0 NOT NULL,
         is_active TINYINT(1) DEFAULT 0 NOT NULL,
         order_num INT(11) DEFAULT 0 NOT NULL,
