@@ -72,9 +72,13 @@ function notion_form_handle_submission($fields, $form_data) {
     // Prepare the data payload for Notion API
     $properties = [];
     foreach ($fields as $field) {
-        if (isset($form_data[$field->column_id])) {
-            $value = sanitize_text_field($form_data[$field->column_id]);
-
+        if (isset($form_data[str_replace(" ", "_", $field->column_id)])) {
+	    if($field->field_attr == "textarea") {
+		    $value = sanitize_textarea_field($form_data[str_replace(" ", "_", $field->column_id)]);
+	    }
+	    else {
+		    $value = sanitize_text_field($form_data[str_replace(" ", "_", $field->column_id)]);
+	    }
             // Handle different Notion field types
             switch ($field->field_type) {
                 case 'rich_text':
@@ -112,6 +116,9 @@ function notion_form_handle_submission($fields, $form_data) {
             'properties' => $properties,
         ]),
     ]);
+
+
+
 
     if (is_wp_error($response)) {
         echo '<div class="error">Error: Could not submit the form.</div>';
