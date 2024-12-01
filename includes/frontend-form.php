@@ -3,9 +3,18 @@
 
 function notion_form_shortcode() {
     global $wpdb;
+    $html = "";
+
+    if (isset($_GET['form_submitted']) && $_GET['form_submitted'] === 'true') {
+        $html = get_option('notion_forms_confirmation_content');
+        return wpautop($html);
+    }
+
+
+
+
 
     $table_name = $wpdb->prefix . 'notion_forms';
-
     // Fetch active fields from the local database
     $fields = $wpdb->get_results(
         $wpdb->prepare(
@@ -14,8 +23,12 @@ function notion_form_shortcode() {
         )
     );
 
+    // Handle form submission
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST)) {
+        notion_form_handle_submission($fields, $_POST);
+    }
     // Start building the HTML form
-    $html = '<form id="notion-generated-form" method="POST">';
+    $html .= '<form id="notion-generated-form" method="POST">';
 
     foreach ($fields as $field) {
         $required = $field->required ? 'required' : '';
@@ -47,14 +60,11 @@ function notion_form_shortcode() {
     $html .= '<button type="submit" class="btn btn-primary">Submit</button>';
     $html .= '</form>';
 
-    // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST)) {
-        notion_form_handle_submission($fields, $_POST);
-    }
-
     return $html;
 }
 add_shortcode('notion_form', 'notion_form_shortcode');
+
+
 
 function notion_form_handle_submission($fields, $form_data) {
     $api_key = get_option('notion_form_api_key');
@@ -122,7 +132,16 @@ function notion_form_handle_submission($fields, $form_data) {
 
     if (is_wp_error($response)) {
         echo '<div class="error">Error: Could not submit the form.</div>';
-    } else {
-        echo '<div class="success">Form submitted successfully.</div>';
+        return;
     }
+
+
+     // Add a query parameter to indicate success and redirect
+     $redirect_url = add_query_arg('form_submitted', 'true', wp_get_referer());
+     echo '<script type="text/javascript">';
+     echo 'window.location.href="' . esc_url($redirect_url) . '";';
+     echo '</script>';
+     exit; 
+
+
 }

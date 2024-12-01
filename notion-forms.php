@@ -17,6 +17,7 @@ define('NOTION_FORMS_URL', plugin_dir_url(__FILE__));
 
 // Include necessary files.
 require_once NOTION_FORMS_PATH . 'includes/admin/settings-page.php';
+require_once NOTION_FORMS_PATH . 'includes/admin/confirmation-page.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/refresh-fields.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/main-page.php';
 require_once NOTION_FORMS_PATH . 'includes/db/create-table.php';
@@ -37,6 +38,17 @@ function notion_forms_register_menu() {
         20
     );
 
+
+    add_submenu_page(
+        'notion-forms',
+        'Confirmation Page',
+        'Confirmation Page',
+        'manage_options',
+        'notion-forms-confirmation',
+        'notion_forms_confirmation_page'
+    );
+
+
     add_submenu_page(
         'notion-forms',
         'Settings',
@@ -50,21 +62,27 @@ add_action('admin_menu', 'notion_forms_register_menu');
 
 
 function notion_forms_enqueue_scripts($hook) {
-    if ($hook === 'toplevel_page_notion-forms') {
-        wp_enqueue_script('jquery-ui-sortable');
-        wp_enqueue_script('jquery-ui-touch-punch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array('jquery-ui-sortable'), '0.2.3', true);
 
-        wp_enqueue_script(
-            'notion-forms-drag-drop',
-            plugins_url('js/notion-forms-drag-drop.js', __FILE__),
-            ['jquery', 'jquery-ui-sortable'],
-            '1.0',
-            true
-        );
+    switch($hook) {
+        case "toplevel_page_notion-forms":
+                echo "here";
+            wp_enqueue_script('jquery-ui-sortable');
+            wp_enqueue_script('jquery-ui-touch-punch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array('jquery-ui-sortable'), '0.2.3', true);
+            wp_enqueue_script(
+                'notion-forms-drag-drop',
+                plugins_url('js/notion-forms-drag-drop.js', __FILE__),
+                ['jquery', 'jquery-ui-sortable'],
+                '1.0',
+                true
+            );
 
-        wp_enqueue_style('wp-admin');  // Ensures WordPress admin styling
-        wp_enqueue_style( 'notion-forms-style', plugins_url('css/notion-forms-style.css', __FILE__));
+            wp_enqueue_style('wp-admin');  // Ensures WordPress admin styling
+            wp_enqueue_style( 'notion-forms-style', plugins_url('css/notion-forms-style.css', __FILE__));
+            break;
 
+        case "notion-forms_page_notion-forms-confirmation":
+            wp_enqueue_editor(); // Enqueue WordPress editor scripts
+            break;
     }
 }
 add_action('admin_enqueue_scripts', 'notion_forms_enqueue_scripts');
