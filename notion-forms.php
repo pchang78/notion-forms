@@ -18,6 +18,7 @@ define('NOTION_FORMS_URL', plugin_dir_url(__FILE__));
 // Include necessary files.
 require_once NOTION_FORMS_PATH . 'includes/admin/settings-page.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/confirmation-page.php';
+require_once NOTION_FORMS_PATH . 'includes/admin/styles-page.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/refresh-fields.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/main-page.php';
 require_once NOTION_FORMS_PATH . 'includes/db/create-table.php';
@@ -46,6 +47,16 @@ function notion_forms_register_menu() {
         'manage_options',
         'notion-forms-confirmation',
         'notion_forms_confirmation_page'
+    );
+
+    
+    add_submenu_page(
+        'notion-forms',              // Parent slug
+        'Styles',                   // Page title
+        'Styles',                   // Menu title
+        'manage_options',           // Capability
+        'notion-forms-styles',      // Menu slug
+        'notion_forms_styles_page' // Callback function
     );
 
 

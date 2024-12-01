@@ -28,7 +28,7 @@ function notion_form_shortcode() {
         notion_form_handle_submission($fields, $_POST);
     }
     // Start building the HTML form
-    $html .= '<form id="notion-generated-form" method="POST">';
+    $html .= '<div id="notion-form-container"><form id="notion-generated-form" method="POST">';
 
     foreach ($fields as $field) {
         $required = $field->required ? 'required' : '';
@@ -58,7 +58,12 @@ function notion_form_shortcode() {
     }
 
     $html .= '<button type="submit" class="btn btn-primary">Submit</button>';
-    $html .= '</form>';
+    $html .= '</form></div>';
+
+    $css = get_option('notion_forms_css');
+    if(isset($css) && $css) {
+        $html .= "<style>$css</style>";
+    }
 
     return $html;
 }
