@@ -2,6 +2,17 @@
 function notion_forms_main_page() {
     global $wpdb;
 
+
+    if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_refresh_fields") {
+        notion_forms_refresh_fields();
+        notion_forms_admin_msg("Fields refreshed successfully!");
+
+    }
+    if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_save_form") {
+        notion_forms_save_form();
+        notion_forms_admin_msg("Form saved.");
+    }
+
     $table_name = $wpdb->prefix . 'notion_forms';
 
     // Query fields based on is_active status.
@@ -18,17 +29,15 @@ function notion_forms_main_page() {
     <div class="wrap">
         <h1>Notion Forms</h1>
         <!-- Refresh Fields Form -->
-        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-            <input type="hidden" name="action" value="notion_forms_action">
-            <input type="hidden" name="notion_forms_action" value="refresh_fields">
+        <form method="post">
+            <input type="hidden" name="action" value="notion_forms_refresh_fields">
             <?php submit_button('Refresh Fields'); ?>
         </form>
         <div class="wp-clearfix">
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+            <form method="post">
             <div id="notion-forms-wrapper">
                 <div class="postbox-container" style="width: 25%; float: left; margin-right: 2%;">
-                    <input type="hidden" name="action" value="notion_forms_action">
-                    <input type="hidden" name="notion_forms_action" value="save_form">
+                    <input type="hidden" name="action" value="notion_forms_save_form">
                     <input type="hidden" name="field_order" value="" id="notion_forms_field_order">
                     <!-- Available Fields -->
                     <h2>Available Fields</h2>
@@ -129,7 +138,7 @@ function notion_forms_handle_post() {
     wp_safe_redirect($_SERVER['HTTP_REFERER']);
     exit;
 }
-add_action('admin_post_notion_forms_action', 'notion_forms_handle_post');
+// add_action('admin_post_notion_forms_action', 'notion_forms_handle_post');
 
 
 function notion_forms_admin_notices() {

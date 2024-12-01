@@ -106,5 +106,4 @@ function notion_forms_refresh_fields() {
         );
     }
 
-    echo '<div class="notice notice-success"><p>Fields refreshed successfully!</p></div>';
 }

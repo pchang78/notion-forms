@@ -82,3 +82,10 @@ function notion_forms_enqueue_styles() {
     }
 }
 add_action('admin_enqueue_scripts', 'notion_forms_enqueue_styles');
+
+
+function notion_forms_admin_msg($message) {
+?>
+    <div class="notice notice-success is-dismissible"> <p><?php echo $message; ?></p> </div>
+<?php
+}
