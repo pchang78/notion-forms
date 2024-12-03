@@ -18,14 +18,17 @@ function notion_form_shortcode() {
     );
 
     // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST)) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion-form-submit'])) {
         notion_form_handle_submission($fields, $_POST);
         $current_url = get_permalink();
         $redirect_url = add_query_arg('form_submitted', '1', $current_url);
         wp_redirect($redirect_url);
     }
     // Start building the HTML form
-    $html = '<div id="notion-form-container"><form id="notion-generated-form" method="POST">';
+    $html = '<div id="notion-form-container">
+        <form id="notion-generated-form" method="POST">
+        <input type="hidden" name="notion-form-submit" value="1">
+    ';
 
     foreach ($fields as $field) {
         $required = $field->required ? 'required' : '';
