@@ -3,16 +3,10 @@
 
 function notion_form_shortcode() {
     global $wpdb;
-    $html = "";
-
-    if (isset($_GET['form_submitted']) && $_GET['form_submitted'] === 'true') {
+    if (isset($_GET['form_submitted']) && $_GET['form_submitted'] === '1') {
         $html = get_option('notion_forms_confirmation_content');
         return wpautop($html);
     }
-
-
-
-
 
     $table_name = $wpdb->prefix . 'notion_forms';
     // Fetch active fields from the local database
@@ -26,9 +20,12 @@ function notion_form_shortcode() {
     // Handle form submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST)) {
         notion_form_handle_submission($fields, $_POST);
+        $current_url = get_permalink();
+        $redirect_url = add_query_arg('form_submitted', '1', $current_url);
+        wp_redirect($redirect_url);
     }
     // Start building the HTML form
-    $html .= '<div id="notion-form-container"><form id="notion-generated-form" method="POST">';
+    $html = '<div id="notion-form-container"><form id="notion-generated-form" method="POST">';
 
     foreach ($fields as $field) {
         $required = $field->required ? 'required' : '';
@@ -132,21 +129,10 @@ function notion_form_handle_submission($fields, $form_data) {
         ]),
     ]);
 
-
-
-
     if (is_wp_error($response)) {
         echo '<div class="error">Error: Could not submit the form.</div>';
         return;
     }
-
-
-     // Add a query parameter to indicate success and redirect
-     $redirect_url = add_query_arg('form_submitted', 'true', wp_get_referer());
-     echo '<script type="text/javascript">';
-     echo 'window.location.href="' . esc_url($redirect_url) . '";';
-     echo '</script>';
-     exit; 
 
 
 }

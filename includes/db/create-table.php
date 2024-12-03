@@ -17,7 +17,6 @@ function notion_forms_create_table() {
         is_active TINYINT(1) DEFAULT 0 NOT NULL,
         order_num INT(11) DEFAULT 0 NOT NULL,
         PRIMARY KEY (id),
-        UNIQUE KEY (column_id),
         KEY required (required),
         KEY is_active (is_active)
     ) $charset_collate;";
