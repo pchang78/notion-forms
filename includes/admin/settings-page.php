@@ -1,8 +1,12 @@
 <?php
 
 function notion_forms_settings_page() {
+
+
+    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+
     ?>
-    <div class="wrap">
+    <div class="wrap" id="notion-forms-container">
         <h1>Notion Forms Settings</h1>
         <?php 
         // Display settings errors or success messages.

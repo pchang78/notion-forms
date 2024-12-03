@@ -15,8 +15,11 @@ function notion_forms_confirmation_page() {
     // Get the current confirmation content
     $confirmation_content = get_option('notion_forms_confirmation_content', '');
 
+    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+
+
     ?>
-    <div class="wrap">
+    <div class="wrap" id="notion-forms-container">
         <h1>Confirmation Page</h1>
         <form method="POST" action="">
             <?php wp_nonce_field('notion_forms_confirmation_save', 'notion_forms_confirmation_nonce'); ?>

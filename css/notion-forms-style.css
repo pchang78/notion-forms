@@ -1,3 +1,9 @@
+#notion-forms-container {
+    padding: 5px 20px;
+}
+
+
+
 .notion-forms-list {
     border: 1px solid #ccc;
     padding: 10px;
@@ -44,3 +50,78 @@
     height: 40px;
     margin: 5px 0;
 }
+
+
+.notion-forms-header {
+    background-color: #2e65a8; /* Dark blue background */
+    color: white;
+    width: 100%;
+    position: sticky;
+    top: 32px;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.notion-forms-header-inner {
+    max-width: 100%; /* Ensure it spans the full content width */
+    padding: 5px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notion-forms-logo {
+    height: 50px; /* Adjust to fit desired size */
+    max-height: 100%; /* Prevent overflowing */
+    width: auto; /* Maintain aspect ratio */
+    margin-right: 20px; /* Spacing between logo and title */
+}
+
+
+.notion-forms-title {
+    font-size: 24px;
+    margin: 0;
+    font-weight: bold;
+    color: white;
+
+
+}
+
+.notion-forms-nav  {
+    display: flex;
+    justify-content: flex-start; /* Aligns the nav items to the left */
+    flex-grow: 1; /* Allows the nav to expand and take available space */
+    margin-left: 20px;
+
+}
+
+
+.notion-forms-nav a {
+    margin-left: 15px;
+    text-decoration: none;
+    color: #ffffff; /* White text for links */
+    font-weight: 500;
+}
+.notion-forms-nav a:hover {
+    text-decoration: underline;
+}
+.notion-forms-nav a.active {
+    font-weight: bold;
+    color: #ffcc00; /* Highlighted tab color */
+}
+.notion-forms-body {
+    margin: 0;
+    padding: 20px;
+    background: #ffffff;
+}
+
+
+/* Remove extra margin between admin menu and plugin header */
+#wpcontent {
+    padding-left: 0 !important;
+}
+.notion-forms-header {
+    margin-left: 0 !important;
+}
+

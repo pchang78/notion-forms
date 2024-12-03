@@ -18,9 +18,10 @@ function notion_forms_styles_page() {
 
     // Retrieve the saved CSS
     $custom_css = get_option('notion_forms_css', '');
+    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
 
     ?>
-    <div class="wrap">
+    <div class="wrap" id="notion-forms-container">
         <h1>Notion Forms Styles</h1>
         <form method="POST">
             <?php wp_nonce_field('save_notion_forms_css', 'notion_forms_css_nonce'); ?>

@@ -76,7 +76,6 @@ function notion_forms_enqueue_scripts($hook) {
 
     switch($hook) {
         case "toplevel_page_notion-forms":
-                echo "here";
             wp_enqueue_script('jquery-ui-sortable');
             wp_enqueue_script('jquery-ui-touch-punch', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js', array('jquery-ui-sortable'), '0.2.3', true);
             wp_enqueue_script(
@@ -87,14 +86,21 @@ function notion_forms_enqueue_scripts($hook) {
                 true
             );
 
-            wp_enqueue_style('wp-admin');  // Ensures WordPress admin styling
-            wp_enqueue_style( 'notion-forms-style', plugins_url('css/notion-forms-style.css', __FILE__));
             break;
 
         case "notion-forms_page_notion-forms-confirmation":
             wp_enqueue_editor(); // Enqueue WordPress editor scripts
             break;
     }
+
+    $screen = get_current_screen();
+    if ($screen && ($screen->id === 'toplevel_page_notion-forms' || strpos($screen->id, 'notion-forms') !== false)) {
+            wp_enqueue_style('wp-admin');  // Ensures WordPress admin styling
+            wp_enqueue_style( 'notion-forms-style', plugins_url('css/notion-forms-style.css', __FILE__));
+    }
+
+
+
 }
 add_action('admin_enqueue_scripts', 'notion_forms_enqueue_scripts');
 
