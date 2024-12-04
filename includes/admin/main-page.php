@@ -32,6 +32,21 @@ function notion_forms_main_page() {
 
     <div class="wrap" id="notion-forms-container">
         <h1>Notion Forms</h1>
+        <br>
+        <div class="notion-forms-shortcode">
+            <label for="notion-forms-shortcode-input">
+                <strong>Use this shortcode to embed the form:</strong>
+            </label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="text" id="notion-forms-shortcode-input" value="[notion_forms]" readonly style="width: 300px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9; font-family: monospace;" 
+        />
+                <button type="button" id="copy-shortcode-button" style="padding: 5px 10px; border: none; background-color: #0073aa; color: white; border-radius: 4px; cursor: pointer;"> Copy </button>
+            </div>
+            <span id="copy-feedback" style="margin-left: 10px; color: green; display: none;">Shortcode copied!</span>
+        </div>
+        <br>
+        <hr>
+
         <!-- Refresh Fields Form -->
         <form method="post">
             <input type="hidden" name="action" value="notion_forms_refresh_fields">

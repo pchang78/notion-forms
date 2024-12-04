@@ -86,6 +86,17 @@ function notion_forms_enqueue_scripts($hook) {
                 true
             );
 
+
+            wp_enqueue_script(
+                'notion-forms-admin-js',
+                plugin_dir_url(__FILE__) . 'js/notion-forms-admin.js',
+                [],
+                '1.0.0',
+                true
+            );
+
+
+
             break;
 
         case "notion-forms_page_notion-forms-confirmation":
