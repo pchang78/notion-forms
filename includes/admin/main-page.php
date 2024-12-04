@@ -17,7 +17,7 @@ function notion_forms_main_page() {
 
     // Query fields based on is_active status.
     $available_fields = $wpdb->get_results(
-        "SELECT * FROM $table_name WHERE is_active = 0 ORDER BY name ASC"
+        "SELECT * FROM $table_name WHERE is_active = 0 AND field_type NOT IN ('last_edited_time') ORDER BY name ASC"
     );
 
     $form_fields = $wpdb->get_results(
