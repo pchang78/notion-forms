@@ -37,6 +37,58 @@ function notion_forms_styles_page() {
 
             <?php submit_button('Save Styles'); ?>
         </form>
+
+        <hr>
+
+        <h2>AI Prompt Helper</h2>
+        <p>A quick way to style your form is to use AI tools like ChatGPT and Claud AI.</p>
+        <p>
+            <label>Describe in one or two words the type of style you want the look for your form to be. (i.e. Elegant, Modern, etc)</label>
+            <br>
+            <input type="text" name="ai_description" id="ai_description" placeholder="Elegant, Modern, etc">
+            <br>
+            <small>If left blank, the word "clean" will be used.</small>
+        </p>
+
+    <form>
+<textarea class="hidden" id="ai_prompt">
+Given the following html form code:
+<?php echo str_replace(">", "&gt;", str_replace("<", "&lt;", notion_form_shortcode(true))); ?>
+
+</textarea>
+<button id="copyButton" type="button">Copy to Prompt to Clipboard</button>
+
+<script>
+  // JavaScript to handle the copy functionality
+  document.getElementById('copyButton').addEventListener('click', function () {
+    event.preventDefault();
+    const textarea = document.getElementById('ai_prompt');
+    const ai_description = document.getElementById('ai_description');
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // For mobile devices
+
+    ai_description_value = ai_description.value.trim();
+    prompt_value = textarea.value;
+
+    if(ai_description_value.length === 0) {
+        ai_description_value = "clean";
+    }
+    prompt_value = prompt_value + "Generate CSS to create a " + ai_description_value + " online form.  Have it scoped to #notion-form-container";
+    // Copy the text to the clipboard
+    navigator.clipboard.writeText(prompt_value)
+      .then(() => {
+        alert('Prompt copied to clipboard!  Paste this prompt into your AI tool and then paste the generated CSS code into the text box above.');
+      })
+      .catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+  });
+</script>
+</form>
+
+
     </div>
+
+
     <?php
 }

@@ -1,7 +1,7 @@
 <?php
 // Add a shortcode to generate a form based on the local "notion_forms" database
 
-function notion_form_shortcode() {
+function notion_form_shortcode($no_styles = false) {
     global $wpdb;
     if (isset($_GET['form_submitted']) && $_GET['form_submitted'] === '1') {
         $html = get_option('notion_forms_confirmation_content');
@@ -25,10 +25,7 @@ function notion_form_shortcode() {
         wp_redirect($redirect_url);
     }
     // Start building the HTML form
-    $html = '<div id="notion-form-container">
-        <form id="notion-generated-form" method="POST">
-        <input type="hidden" name="notion-form-submit" value="1">
-    ';
+    $html = '<div id="notion-form-container"> <form id="notion-generated-form" method="POST"> <input type="hidden" name="notion-form-submit" value="1"> ';
 
     foreach ($fields as $field) {
         $required = $field->required ? 'required' : '';
@@ -60,9 +57,11 @@ function notion_form_shortcode() {
     $html .= '<button type="submit" class="btn btn-primary">Submit</button>';
     $html .= '</form></div>';
 
-    $css = get_option('notion_forms_css');
-    if(isset($css) && $css) {
-        $html .= "<style>$css</style>";
+    if(!$no_styles) {
+        $css = get_option('notion_forms_css');
+        if(isset($css) && $css) {
+            $html .= "<style>$css</style>";
+        }
     }
 
     return $html;
