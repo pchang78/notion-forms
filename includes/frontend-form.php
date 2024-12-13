@@ -66,7 +66,7 @@ function notion_form_shortcode($no_styles = false) {
 
     return $html;
 }
-add_shortcode('notion_form', 'notion_form_shortcode');
+add_shortcode('notion_forms', 'notion_form_shortcode');
 
 
 
