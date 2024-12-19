@@ -45,65 +45,81 @@ function notion_forms_refresh_fields() {
         return;
     }
 
-    $table_name = $wpdb->prefix . 'notion_forms';
+    // Get existing fields
+    $existing_fields = get_posts(array(
+        'post_type' => 'notion_form_field',
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => 'column_id',
+                'compare' => 'EXISTS'
+            )
+        )
+    ));
 
-    // Get all existing column IDs in the local database.
-    $existing_columns = $wpdb->get_col("SELECT column_id FROM $table_name");
+    $existing_column_ids = array_map(function($post) {
+        return get_post_meta($post->ID, 'column_id', true);
+    }, $existing_fields);
 
-    // Prepare arrays to track new and matched column IDs.
-    $notion_columns = array_keys($data['properties']);
     $processed_columns = [];
 
     foreach ($data['properties'] as $column_id => $field) {
         $processed_columns[] = $column_id;
+        
+        // Find existing post by column_id
+        $existing_post = get_posts(array(
+            'post_type' => 'notion_form_field',
+            'meta_key' => 'column_id',
+            'meta_value' => $column_id,
+            'posts_per_page' => 1
+        ));
 
-        // Check if the column already exists.
-        $existing_entry = $wpdb->get_row(
-            $wpdb->prepare("SELECT id FROM $table_name WHERE column_id = %s", $column_id)
+        $field_data = array(
+            'post_title' => $field['name'],
+            'post_type' => 'notion_form_field',
+            'post_status' => 'publish'
         );
 
-        switch($field['type']) {
-            case "select":
-                $arrOptions = array();
-                foreach($field['select']['options'] AS $option) {
-                    $arrOptions[] = $option['name'];
-                }
-                $field_attr = implode("|", $arrOptions);
+        $meta_data = array(
+            'column_id' => $column_id,
+            'field_type' => $field['type'],
+            'required' => 0,
+            'is_active' => 0,
+            'order_num' => 0
+        );
 
-
-                if ($existing_entry) {
-                    $wpdb->update($table_name, [ 'name' => $field['name'], 'field_type' => $field['type'], 'field_attr' => $field_attr, ], ['column_id' => $column_id]);
-                } else {
-                    $wpdb->insert($table_name, [ 'column_id'  => $column_id, 'name' => $field['name'], 'field_type' => $field['type'], 'field_attr' => $field_attr, 'required' => 0, 'is_active'  => 0, 'order_num' => 0 ]);
-                }
-
-                break;
-
-            default:
-
-                if ($existing_entry) {
-                    $wpdb->update($table_name, [ 'name' => $field['name'], 'field_type' => $field['type'] ], ['column_id' => $column_id]);
-                } else {
-                    $wpdb->insert($table_name, [ 'column_id'  => $column_id, 'name' => $field['name'], 'field_type' => $field['type'], 'required' => 0, 'is_active'  => 0, 'order_num' => 0 ]);
-                }
-
-
-                break;
+        if($field['type'] === 'select') {
+            $options = array_map(function($option) {
+                return $option['name'];
+            }, $field['select']['options']);
+            $meta_data['field_attr'] = implode('|', $options);
         }
 
+        if($existing_post) {
+            $post_id = $existing_post[0]->ID;
+            $field_data['ID'] = $post_id;
+            wp_update_post($field_data);
+        } else {
+            $post_id = wp_insert_post($field_data);
+        }
 
-
-
-
+        foreach($meta_data as $key => $value) {
+            update_post_meta($post_id, $key, $value);
+        }
     }
 
-    // Delete entries that are no longer in the Notion data.
-    $obsolete_columns = array_diff($existing_columns, $processed_columns);
-    if (!empty($obsolete_columns)) {
-        $placeholders = implode(',', array_fill(0, count($obsolete_columns), '%s'));
-        $wpdb->query(
-            $wpdb->prepare("DELETE FROM $table_name WHERE column_id IN ($placeholders)", $obsolete_columns)
-        );
+    // Delete obsolete fields
+    $obsolete_columns = array_diff($existing_column_ids, $processed_columns);
+    foreach($obsolete_columns as $column_id) {
+        $obsolete_post = get_posts(array(
+            'post_type' => 'notion_form_field',
+            'meta_key' => 'column_id',
+            'meta_value' => $column_id,
+            'posts_per_page' => 1
+        ));
+        
+        if($obsolete_post) {
+            wp_delete_post($obsolete_post[0]->ID, true);
+        }
     }
-
 }

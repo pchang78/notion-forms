@@ -16,13 +16,37 @@ function notion_forms_main_page() {
     $table_name = $wpdb->prefix . 'notion_forms';
 
     // Query fields based on is_active status.
-    $available_fields = $wpdb->get_results(
-        "SELECT * FROM $table_name WHERE is_active = 0 AND field_type NOT IN ('last_edited_time') ORDER BY name ASC"
-    );
+    $available_fields = get_posts(array(
+        'post_type' => 'notion_form_field',
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => 'is_active',
+                'value' => '0'
+            ),
+            array(
+                'key' => 'field_type',
+                'value' => 'last_edited_time',
+                'compare' => '!='
+            )
+        ),
+        'orderby' => 'title',
+        'order' => 'ASC'
+    ));
 
-    $form_fields = $wpdb->get_results(
-        "SELECT * FROM $table_name WHERE is_active = 1 ORDER BY order_num ASC"
-    );
+    $form_fields = get_posts(array(
+        'post_type' => 'notion_form_field',
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => 'is_active',
+                'value' => '1'
+            )
+        ),
+        'meta_key' => 'order_num',
+        'orderby' => 'meta_value_num',
+        'order' => 'ASC'
+    ));
 
 
     require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
@@ -85,7 +109,17 @@ function notion_forms_main_page() {
 }
 
 // Render individual field items
-function notion_forms_the_field_item($field, $active = false) {
+function notion_forms_the_field_item($post, $active = false) {
+    $field_id = $post->ID;
+    $field_name = $post->post_title;
+    $field_type = get_post_meta($field_id, 'field_type', true);
+    $field_attr = get_post_meta($field_id, 'field_attr', true);
+    $required = get_post_meta($field_id, 'required', true);
+    $is_active = $active ? 1 : 0;
+    $hide = $active ? '' : 'hidden';
+    $checked = $required ? 'CHECKED' : '';
+    
+
 	if($active) {
 		$active_val = 1;
         $hide = "";
@@ -94,38 +128,34 @@ function notion_forms_the_field_item($field, $active = false) {
 		$active_val = 0;
         $hide = "hidden";
 	}
-    if($field->required) {
-        $checked = "CHECKED";
-    }
-    else {
-        $checked = "";
-    }
+
 ?>
 
-                            <li class="notion-field-item" data-id="<?php echo esc_attr($field->id); ?>" draggable="true">
-                                <input type="hidden" name="field[<?php echo esc_attr($field->id); ?>][is_active]" value="<?php echo $active_val; ?>" id="is_active<?php echo esc_attr($field->id); ?>">
-                                <p>
-                                    <?php echo esc_html($field->name); ?> <small> <?php echo esc_html($field->field_type); ?> </small>
-                                </p>
-                                <p class="attributes <?php echo $hide; ?>">
-                                    <input type="checkbox" name="field[<?php echo esc_attr($field->id); ?>][required]" value="1" id="required<?php echo esc_attr($field->id); ?>" <?php echo $checked; ?>> Required
-                                    <br>
+
+    <li class="notion-field-item" data-id="<?php echo esc_attr($field_id); ?>" draggable="true">
+    <input type="hidden" name="field[<?php echo esc_attr($field_id); ?>][is_active]" value="<?php echo $active_val; ?>" id="is_active<?php echo esc_attr($field_id); ?>">
+    <p>
+        <?php echo esc_html($field_name); ?> <small> <?php echo esc_html($field_type); ?> </small>
+    </p>
+    <p class="attributes <?php echo $hide; ?>">
+        <input type="checkbox" name="field[<?php echo esc_attr($field_id); ?>][required]" value="1" id="required<?php echo esc_attr($field_id); ?>" <?php echo $checked; ?>> Required
+        <br>
 <?php 
-    if($field->field_type == "rich_text") :
+if($field_type == "rich_text") :
 ?>
-                                    <label for="field_attr<?php echo esc_attr($field->id); ?>">
-                                    Field Type:
-                                    <select name="field[<?php echo esc_attr($field->id); ?>][field_attr]" id="field_attr<?php echo esc_attr($field->id); ?>">
-                                        <option value="text" <?php if($field->field_attr == "text") echo "selected"; ?>>Text</option>
-                                        <option value="textarea" <?php if($field->field_attr == "textarea") echo "selected"; ?>>Textarea</option>
-                                    </select> 
-                                    </label>
+        <label for="field_attr<?php echo esc_attr($field_id); ?>">
+        Field Type:
+        <select name="field[<?php echo esc_attr($field_id); ?>][field_attr]" id="field_attr<?php echo esc_attr($field_id); ?>">
+            <option value="text" <?php if($field_attr == "text") echo "selected"; ?>>Text</option>
+            <option value="textarea" <?php if($field_attr == "textarea") echo "selected"; ?>>Textarea</option>
+        </select> 
+        </label>
 <?php
-    endif;
+endif;
 ?>
 
-                                </p>
-                            </li>
+    </p>
+</li>
 <?php
 }
 
@@ -144,12 +174,6 @@ function notion_forms_handle_post() {
         exit;
     } 
     elseif ($action === 'save_form') {
-        /*
-        echo "<pre>";
-        print_r($_POST);
-        echo "</pre>";
-        exit;
-        */
         notion_forms_save_form();
         wp_safe_redirect(add_query_arg('notion_refresh', 'save_form', $_SERVER['HTTP_REFERER']));
         exit;
@@ -180,39 +204,30 @@ add_action('admin_notices', 'notion_forms_admin_notices');
 
 
 function notion_forms_save_form() {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'notion_forms';
     foreach ($_POST['field'] as $field_id => $field) {
         $field_id = intval($field_id);
         $is_active = intval($field['is_active']);
+        $required = isset($field['required']) && $field['required'] ? 1 : 0;
 
-        if(isset($field['required']) && $field['required']) {
-            $required = 1;
-        }
-        else {
-            $required = 0;
-        }
+        // Update is_active status
+        update_post_meta($field_id, 'is_active', $is_active);
+        
+        // Update required status
+        update_post_meta($field_id, 'required', $required);
 
+        // Update field_attr if it exists
         if(isset($field['field_attr']) && $field['field_attr']) {
-            $field_attr = $field['field_attr'];
-            $update_result = $wpdb->update( $table_name, ['is_active' => $is_active, 'required' => $required, 'field_attr' => $field_attr], ['id' => $field_id]);
+            update_post_meta($field_id, 'field_attr', sanitize_text_field($field['field_attr']));
         }
-        else {
-            $update_result = $wpdb->update( $table_name, ['is_active' => $is_active, 'required' => $required ], ['id' => $field_id]);
-        }
-
-
     }
+
+    // Update order numbers
     if(isset($_POST['field_order']) && $_POST['field_order']) {
-        $arrFields = explode(",", $_POST['field_order']);
-        foreach ($arrFields AS $index => $field_id) {
+        $field_ids = explode(",", $_POST['field_order']);
+        foreach ($field_ids as $index => $field_id) {
             $field_id = intval($field_id);
             $order_num = $index + 1;
-            $update_result = $wpdb->update(
-                $table_name,
-                ['order_num' => $order_num], 
-                ['id' => $field_id]
-            );
+            update_post_meta($field_id, 'order_num', $order_num);
         }
     }
 }

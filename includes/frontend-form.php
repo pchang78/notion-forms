@@ -2,50 +2,109 @@
 // Add a shortcode to generate a form based on the local "notion_forms" database
 
 function notion_form_shortcode($no_styles = false) {
-    global $wpdb;
-    if (isset($_GET['form_submitted']) && $_GET['form_submitted'] === '1') {
-        $html = get_option('notion_forms_confirmation_content');
-        return wpautop($html);
+    // Start output buffering to prevent headers already sent error
+    ob_start();
+    
+    $form_message = '';
+    $submission_token = wp_create_nonce('notion_form_submission');
+    
+    // Check if this is a successful submission redirect
+    if (isset($_GET['submission']) && $_GET['submission'] === 'success') {
+        ob_end_clean(); // Clear the buffer
+        return wpautop(get_option('notion_forms_confirmation_content', 'Thank you for your submission.'));
     }
-
-    $table_name = $wpdb->prefix . 'notion_forms';
-    // Fetch active fields from the local database
-    $fields = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT * FROM $table_name WHERE is_active = %d ORDER BY order_num ASC",
-            1
-        )
-    );
-
-    // Handle form submission
+    
+    // Handle form submission before any output
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion-form-submit'])) {
-        notion_form_handle_submission($fields, $_POST);
-        $current_url = get_permalink();
-        $redirect_url = add_query_arg('form_submitted', '1', $current_url);
-        wp_redirect($redirect_url);
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['submission_token'], 'notion_form_submission')) {
+            $form_message = '<div class="error">Invalid submission. Please try again.</div>';
+        } else {
+            // Fetch active fields for submission
+            $fields = get_posts(array(
+                'post_type' => 'notion_form_field',
+                'posts_per_page' => -1,
+                'meta_query' => array(
+                    array(
+                        'key' => 'is_active',
+                        'value' => '1'
+                    )
+                )
+            ));
+            
+            $submission_result = notion_form_handle_submission($fields, $_POST);
+            if ($submission_result === true) {
+                $redirect_url = add_query_arg(
+                    array(
+                        'submission' => 'success'
+                    ),
+                    get_permalink()
+                );
+                ob_end_clean(); // Clear the buffer
+                ?>
+                <script>
+                    window.location.href = "<?php echo esc_js($redirect_url); ?>";
+                </script>
+                <?php
+                return "Redirecting...";
+            } else {
+                $form_message = '<div class="error">' . esc_html($submission_result) . '</div>';
+            }
+        }
     }
+
+    // Fetch active fields for form display
+    $fields = get_posts(array(
+        'post_type' => 'notion_form_field',
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => 'is_active',
+                'value' => '1'
+            )
+        ),
+        'meta_key' => 'order_num',
+        'orderby' => 'meta_value_num',
+        'order' => 'ASC'
+    ));
+
     // Start building the HTML form
-    $html = '<div id="notion-form-container"> <form id="notion-generated-form" method="POST"> <input type="hidden" name="notion-form-submit" value="1"> ';
+    $html = '<div id="notion-form-container">';
+    
+    // Add form message if exists
+    if ($form_message) {
+        $html .= $form_message;
+    }
+    
+    $html .= '<form id="notion-generated-form" method="POST">';
+    $html .= '<input type="hidden" name="notion-form-submit" value="1">';
+    // Add the nonce field
+    $html .= wp_nonce_field('notion_form_submission', 'submission_token', true, false);
 
     foreach ($fields as $field) {
-        $required = $field->required ? 'required' : '';
-        $label = esc_html($field->name);
-        $field_id = esc_attr($field->column_id);
+        // Get field metadata
+        $required = get_post_meta($field->ID, 'required', true) ? 'required' : '';
+        $field_type = get_post_meta($field->ID, 'field_type', true);
+        $field_attr = get_post_meta($field->ID, 'field_attr', true);
+        $column_id = get_post_meta($field->ID, 'column_id', true);
+        
+        $label = esc_html($field->post_title);
+        $field_id = esc_attr($field->ID);
 
         $html .= '<div class="form-group">';
         $html .= "<label for='$field_id'>$label</label>";
 
-        if ($field->field_type === 'select') {
-            $arrOptions = explode("|", $field->field_attr);
+        if ($field_type === 'select') {
+            $arrOptions = explode("|", $field_attr);
             $select_options = "";
             foreach($arrOptions AS $option) {
                 $select_options .= "<option value='$option'>$option</option>";
             }
             $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
         }
-        elseif ($field->field_type === 'rich_text' && $field->field_attr === 'textarea') {
+        elseif ($field_type === 'rich_text' && $field_attr === 'textarea') {
             $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
-        } elseif ($field->field_type === 'phone_number') {
+        } elseif ($field_type === 'phone_number') {
             $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
         } else {
             $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
@@ -64,6 +123,7 @@ function notion_form_shortcode($no_styles = false) {
         }
     }
 
+    ob_end_clean(); // Clear the buffer before returning
     return $html;
 }
 add_shortcode('notion_forms', 'notion_form_shortcode');
@@ -79,44 +139,53 @@ function notion_form_handle_submission($fields, $form_data) {
     $database_id = $matches[0] ?? '';
 
     if (empty($database_id) || empty($api_key)) {
-        echo '<div class="error">Error: Notion API Key or Database ID is missing.</div>';
-        return;
+        return 'Error: Notion API Key or Database ID is missing.';
     }
 
     // Prepare the data payload for Notion API
     $properties = [];
     foreach ($fields as $field) {
-        if (isset($form_data[str_replace(" ", "_", $field->column_id)])) {
-	    if($field->field_attr == "textarea") {
-		    $value = sanitize_textarea_field($form_data[str_replace(" ", "_", $field->column_id)]);
-	    }
-	    else {
-		    $value = sanitize_text_field($form_data[str_replace(" ", "_", $field->column_id)]);
-	    }
+
+        $field_type = get_post_meta($field->ID, 'field_type', true);
+        $field_name = get_post_meta($field->ID, 'column_id', true);
+        if (isset($form_data[$field->ID])) {
+
+            if($field_type == "textarea") {
+                $value = sanitize_textarea_field($form_data[$field->ID]);
+            }
+            else {
+                $value = sanitize_text_field($form_data[$field->ID]);
+            }
+
+
+
             // Handle different Notion field types
-            switch ($field->field_type) {
+            switch ($field_type) {
                 case 'rich_text':
-                    $properties[$field->name] = [
+                    $properties[$field_name] = [
                         'rich_text' => [['text' => ['content' => $value]]],
                     ];
                     break;
                 case 'select':
-                    $properties[$field->name] = ['select' => ['name' => $value]];
+                    $properties[$field_name] = ['select' => ['name' => $value]];
                     break;
                 case 'phone_number':
-                    $properties[$field->name] = ['phone_number' => $value];
+                    $properties[$field_name] = ['phone_number' => $value];
                     break;
                 case 'email':
-                    $properties[$field->name] = ['email' => $value];
+                    $properties[$field_name] = ['email' => $value];
                     break;
                 default: // Fallback for other types, such as titles
-                    $properties[$field->name] = [
+                    $properties[$field_name] = [
                         'title' => [['text' => ['content' => $value]]],
                     ];
                     break;
             }
         }
     }
+
+
+
 
     // API request to add entry to Notion database
     $response = wp_remote_post('https://api.notion.com/v1/pages', [
@@ -132,9 +201,8 @@ function notion_form_handle_submission($fields, $form_data) {
     ]);
 
     if (is_wp_error($response)) {
-        echo '<div class="error">Error: Could not submit the form.</div>';
-        return;
+        return 'Error: Could not submit the form.';
     }
 
-
+    return true; // Successful submission
 }
