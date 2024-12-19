@@ -3,14 +3,16 @@
 // Render the Styles page
 function notion_forms_styles_page() {
     // Check if the user has submitted the form
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion_forms_css_nonce'])) {
-        if (!wp_verify_nonce($_POST['notion_forms_css_nonce'], 'save_notion_forms_css')) {
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion_forms_css_nonce'])) {
+        if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_css_nonce'])), 'save_notion_forms_css')) {
             wp_die('Security check failed.');
         }
 
         // Save the custom CSS
-        $custom_css = sanitize_textarea_field($_POST['notion_forms_css']);
-        update_option('notion_forms_css', $custom_css);
+        if(isset($_POST['notion_forms_css'])) {
+            $custom_css = sanitize_textarea_field(wp_unslash($_POST['notion_forms_css']));
+            update_option('notion_forms_css', $custom_css);
+        }
 
         // Display success message
         echo '<div class="updated notice is-dismissible"><p>Styles saved successfully.</p></div>';

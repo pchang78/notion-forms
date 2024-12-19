@@ -15,9 +15,9 @@ function notion_form_shortcode($no_styles = false) {
     }
     
     // Handle form submission before any output
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion-form-submit'])) {
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion-form-submit'])) {
         // Verify nonce
-        if (!wp_verify_nonce($_POST['submission_token'], 'notion_form_submission')) {
+        if (isset($_POST['submission_token']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['submission_token'])), 'notion_form_submission')) {
             $form_message = '<div class="error">Invalid submission. Please try again.</div>';
         } else {
             // Fetch active fields for submission
@@ -194,7 +194,7 @@ function notion_form_handle_submission($fields, $form_data) {
             'Content-Type'  => 'application/json',
             'Notion-Version' => '2022-06-28',
         ],
-        'body' => json_encode([
+        'body' => wp_json_encode([
             'parent' => ['database_id' => $database_id],
             'properties' => $properties,
         ]),

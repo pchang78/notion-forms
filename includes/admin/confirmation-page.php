@@ -6,8 +6,8 @@ function notion_forms_confirmation_page() {
     }
 
     // Save the confirmation content
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion_forms_confirmation_content'])) {
-        $confirmation_content = wp_kses_post($_POST['notion_forms_confirmation_content']);
+    if (isset($_POST['notion_forms_confirmation_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_confirmation_nonce'])), 'notion_forms_confirmation_save') && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion_forms_confirmation_content'])) {
+        $confirmation_content = wp_kses_post(wp_unslash($_POST['notion_forms_confirmation_content']));
         update_option('notion_forms_confirmation_content', $confirmation_content);
         echo '<div class="notice notice-success is-dismissible"><p>Confirmation content updated successfully.</p></div>';
     }

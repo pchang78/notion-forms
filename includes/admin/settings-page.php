@@ -62,15 +62,9 @@ function notion_forms_register_settings() {
         'default' => '',
     ]);
 
-    // Add a success message after settings are saved.
-    if (isset($_GET['settings-updated']) && $_GET['settings-updated']) {
-        add_settings_error(
-            'notion_forms_messages',
-            'notion_forms_message',
-            'Settings saved successfully!',
-            'updated'
-        );
-    }
+
+
+
 }
 add_action('admin_init', 'notion_forms_register_settings');
 

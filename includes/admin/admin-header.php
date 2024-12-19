@@ -4,7 +4,23 @@
             <h1 class="notion-forms-title">Notion Forms</h1>
             <nav class="notion-forms-nav">
     <?php
-    $current_page = isset($_GET['page']) ? $_GET['page'] : '';
+
+        $screen = get_current_screen();
+        switch ($screen->id) {
+        case 'toplevel_page_notion-forms':
+                $current_page = 'notion-forms';
+                break;
+        case 'notion-forms_page_notion-forms-confirmation':
+                $current_page = 'notion-forms-confirmation';
+                break;
+        case 'notion-forms_page_notion-forms-styles':
+                $current_page = 'notion-forms-styles';
+                break;
+        case 'notion-forms_page_notion-forms-settings':
+                $current_page = 'notion-forms-settings';
+                break;
+        }
+
     ?>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms')); ?>" class="<?php echo $current_page === 'notion-forms' ? 'active' : ''; ?>">Notion Form</a>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-confirmation')); ?>" class="<?php echo $current_page === 'notion-forms-confirmation' ? 'active' : ''; ?>">Confirmation Page</a>

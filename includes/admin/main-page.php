@@ -3,14 +3,14 @@ function notion_forms_main_page() {
     global $wpdb;
 
 
-    if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_refresh_fields") {
+    if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_refresh_fields" && isset($_POST['notion_forms_refresh_fields_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_refresh_fields_nonce'])), 'notion_forms_refresh_fields')) {
         notion_forms_refresh_fields();
         notion_forms_admin_msg("Fields refreshed successfully!");
 
     }
     if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_save_form") {
         notion_forms_save_form();
-        notion_forms_admin_msg("Form saved.");
+        notion_forms_admin_msg("Form saved!");
     }
 
     $table_name = $wpdb->prefix . 'notion_forms';
@@ -73,11 +73,13 @@ function notion_forms_main_page() {
 
         <!-- Refresh Fields Form -->
         <form method="post">
+            <?php wp_nonce_field('notion_forms_refresh_fields', 'notion_forms_refresh_fields_nonce'); ?>
             <input type="hidden" name="action" value="notion_forms_refresh_fields">
             <?php submit_button('Refresh Fields'); ?>
         </form>
         <div class="wp-clearfix">
             <form method="post">
+            <?php wp_nonce_field('notion_forms_save_form', 'notion_forms_save_form_nonce'); ?>
             <div id="notion-forms-wrapper">
                 <div class="postbox-container" style="width: 25%; float: left; margin-right: 2%;">
                     <input type="hidden" name="action" value="notion_forms_save_form">
@@ -160,70 +162,34 @@ endif;
 }
 
 
-// Handle form actions.
-function notion_forms_handle_post() {
-    if (!isset($_POST['notion_forms_action'])) {
-        return;
-    }
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'notion_forms';
-    $action = sanitize_text_field($_POST['notion_forms_action']);
-    if ($action === 'refresh_fields') {
-        notion_forms_refresh_fields();
-        wp_safe_redirect(add_query_arg('notion_refresh', 'success', $_SERVER['HTTP_REFERER']));
-        exit;
-    } 
-    elseif ($action === 'save_form') {
-        notion_forms_save_form();
-        wp_safe_redirect(add_query_arg('notion_refresh', 'save_form', $_SERVER['HTTP_REFERER']));
-        exit;
-    }
-    wp_safe_redirect($_SERVER['HTTP_REFERER']);
-    exit;
-}
-// add_action('admin_post_notion_forms_action', 'notion_forms_handle_post');
-
-
-function notion_forms_admin_notices() {
-    if (isset($_GET['notion_refresh']) && $_GET['notion_refresh'] === 'success') {
-        ?>
-        <div class="notice notice-success is-dismissible">
-            <p><?php esc_html_e('Fields refreshed successfully!', 'notion-forms'); ?></p>
-        </div>
-        <?php
-    }
-    elseif (isset($_GET['notion_refresh']) && $_GET['notion_refresh'] === 'save_form') {
-        ?>
-        <div class="notice notice-success is-dismissible">
-            <p><?php esc_html_e('Form Saved!', 'notion-forms'); ?></p>
-        </div>
-        <?php
-    }
-}
-add_action('admin_notices', 'notion_forms_admin_notices');
-
-
 function notion_forms_save_form() {
-    foreach ($_POST['field'] as $field_id => $field) {
-        $field_id = intval($field_id);
-        $is_active = intval($field['is_active']);
-        $required = isset($field['required']) && $field['required'] ? 1 : 0;
+    if(isset($_POST['notion_forms_save_form_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_save_form_nonce'])), 'notion_forms_save_form') && isset($_POST['field'])) {
 
-        // Update is_active status
-        update_post_meta($field_id, 'is_active', $is_active);
-        
-        // Update required status
-        update_post_meta($field_id, 'required', $required);
 
-        // Update field_attr if it exists
-        if(isset($field['field_attr']) && $field['field_attr']) {
-            update_post_meta($field_id, 'field_attr', sanitize_text_field($field['field_attr']));
+
+
+
+        foreach (wp_unslash($_POST['field']) as $field_id => $field) {
+            $field_id = intval($field_id);
+            $is_active = intval($field['is_active']);
+            $required = isset($field['required']) && $field['required'] ? 1 : 0;
+
+            // Update is_active status
+            update_post_meta($field_id, 'is_active', $is_active);
+            
+            // Update required status
+            update_post_meta($field_id, 'required', $required);
+
+            // Update field_attr if it exists
+            if(isset($field['field_attr']) && $field['field_attr']) {
+                update_post_meta($field_id, 'field_attr', sanitize_text_field($field['field_attr']));
+            }
         }
     }
 
     // Update order numbers
-    if(isset($_POST['field_order']) && $_POST['field_order']) {
-        $field_ids = explode(",", $_POST['field_order']);
+    if(isset($_POST['field_order']) && sanitize_text_field(wp_unslash($_POST['field_order']))) {
+        $field_ids = explode(",", sanitize_text_field(wp_unslash($_POST['field_order'])));
         foreach ($field_ids as $index => $field_id) {
             $field_id = intval($field_id);
             $order_num = $index + 1;
