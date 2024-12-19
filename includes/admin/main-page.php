@@ -133,12 +133,12 @@ function notion_forms_the_field_item($post, $active = false) {
 
 
     <li class="notion-field-item" data-id="<?php echo esc_attr($field_id); ?>" draggable="true">
-    <input type="hidden" name="field[<?php echo esc_attr($field_id); ?>][is_active]" value="<?php echo $active_val; ?>" id="is_active<?php echo esc_attr($field_id); ?>">
+    <input type="hidden" name="field[<?php echo esc_attr($field_id); ?>][is_active]" value="<?php echo esc_attr($active_val); ?>" id="is_active<?php echo esc_attr($field_id); ?>">
     <p>
         <?php echo esc_html($field_name); ?> <small> <?php echo esc_html($field_type); ?> </small>
     </p>
-    <p class="attributes <?php echo $hide; ?>">
-        <input type="checkbox" name="field[<?php echo esc_attr($field_id); ?>][required]" value="1" id="required<?php echo esc_attr($field_id); ?>" <?php echo $checked; ?>> Required
+    <p class="attributes <?php echo esc_attr($hide); ?>">
+        <input type="checkbox" name="field[<?php echo esc_attr($field_id); ?>][required]" value="1" id="required<?php echo esc_attr($field_id); ?>" <?php echo esc_attr($checked); ?>> Required
         <br>
 <?php 
 if($field_type == "rich_text") :
@@ -188,14 +188,14 @@ function notion_forms_admin_notices() {
     if (isset($_GET['notion_refresh']) && $_GET['notion_refresh'] === 'success') {
         ?>
         <div class="notice notice-success is-dismissible">
-            <p><?php _e('Fields refreshed successfully!', 'notion-forms'); ?></p>
+            <p><?php esc_html_e('Fields refreshed successfully!', 'notion-forms'); ?></p>
         </div>
         <?php
     }
     elseif (isset($_GET['notion_refresh']) && $_GET['notion_refresh'] === 'save_form') {
         ?>
         <div class="notice notice-success is-dismissible">
-            <p><?php _e('Form Saved!', 'notion-forms'); ?></p>
+            <p><?php esc_html_e('Form Saved!', 'notion-forms'); ?></p>
         </div>
         <?php
     }

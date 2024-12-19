@@ -1,10 +1,12 @@
 <?php
-/**
- * Plugin Name: Notion Forms
- * Description: Integrate Notion databases as forms in WordPress.
- * Version: 1.0.0
- * Author: Patrick Chang
- */
+/*
+Plugin Name: Notion Forms
+Description: Integrate Notion databases as forms in WordPress.
+Version: 1.0.0
+Author: Patrick Chang
+Author URI: https://everydaytech.tv/wp/
+License: GPLv2 or later
+*/
 
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
@@ -135,6 +137,6 @@ add_action('admin_enqueue_scripts', 'notion_forms_enqueue_styles');
 
 function notion_forms_admin_msg($message) {
 ?>
-    <div class="notice notice-success is-dismissible"> <p><?php echo $message; ?></p> </div>
+    <div class="notice notice-success is-dismissible"> <p><?php echo esc_html($message); ?></p> </div>
 <?php
 }

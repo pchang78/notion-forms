@@ -53,7 +53,7 @@ function notion_forms_styles_page() {
     <form>
 <textarea class="hidden" id="ai_prompt">
 Given the following html form code:
-<?php echo str_replace(">", "&gt;", str_replace("<", "&lt;", notion_form_shortcode(true))); ?>
+<?php echo esc_html(str_replace(">", "&gt;", str_replace("<", "&lt;", notion_form_shortcode(true)))); ?>
 
 </textarea>
 <button id="copyButton" type="button">Copy to Prompt to Clipboard</button>

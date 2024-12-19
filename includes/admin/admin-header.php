@@ -1,6 +1,6 @@
 <div class="notion-forms-header">
         <div class="notion-forms-header-inner">
-            <img src="<?php echo plugin_dir_url(__FILE__) . '../../assets/notion-forms-logo.png'; ?>" alt="Notion Content Logo" class="notion-forms-logo">
+            <img src="<?php echo esc_url(plugin_dir_url(__FILE__) . '../../assets/notion-forms-logo.png'); ?>" alt="Notion Content Logo" class="notion-forms-logo">
             <h1 class="notion-forms-title">Notion Forms</h1>
             <nav class="notion-forms-nav">
     <?php
