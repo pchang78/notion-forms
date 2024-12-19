@@ -80,31 +80,40 @@ function notion_forms_refresh_fields() {
             'post_status' => 'publish'
         );
 
-        $meta_data = array(
-            'column_id' => $column_id,
-            'field_type' => $field['type'],
-            'required' => 0,
-            'is_active' => 0,
-            'order_num' => 0
-        );
-
-        if($field['type'] === 'select') {
-            $options = array_map(function($option) {
-                return $option['name'];
-            }, $field['select']['options']);
-            $meta_data['field_attr'] = implode('|', $options);
-        }
-
         if($existing_post) {
+            // Update existing post
             $post_id = $existing_post[0]->ID;
             $field_data['ID'] = $post_id;
             wp_update_post($field_data);
-        } else {
-            $post_id = wp_insert_post($field_data);
-        }
 
-        foreach($meta_data as $key => $value) {
-            update_post_meta($post_id, $key, $value);
+            // Only update field_type and field_attr, preserve other meta values
+            update_post_meta($post_id, 'field_type', $field['type']);
+            
+            if($field['type'] === 'select') {
+                $options = array_map(function($option) {
+                    return $option['name'];
+                }, $field['select']['options']);
+                update_post_meta($post_id, 'field_attr', implode('|', $options));
+            }
+        } else {
+            // Create new post
+            $post_id = wp_insert_post($field_data);
+            
+            if($post_id) {
+                // Set default meta values for new fields
+                update_post_meta($post_id, 'column_id', $column_id);
+                update_post_meta($post_id, 'field_type', $field['type']);
+                update_post_meta($post_id, 'required', 0);
+                update_post_meta($post_id, 'is_active', 0);
+                update_post_meta($post_id, 'order_num', 0);
+                
+                if($field['type'] === 'select') {
+                    $options = array_map(function($option) {
+                        return $option['name'];
+                    }, $field['select']['options']);
+                    update_post_meta($post_id, 'field_attr', implode('|', $options));
+                }
+            }
         }
     }
 
