@@ -165,14 +165,10 @@ endif;
 function notion_forms_save_form() {
     if(isset($_POST['notion_forms_save_form_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_save_form_nonce'])), 'notion_forms_save_form') && isset($_POST['field'])) {
 
-
-
-
-
-        foreach (wp_unslash($_POST['field']) as $field_id => $field) {
+        foreach ($_POST['field'] as $field_id => $field) {
             $field_id = intval($field_id);
-            $is_active = intval($field['is_active']);
-            $required = isset($field['required']) && $field['required'] ? 1 : 0;
+            $is_active = intval(sanitize_text_field(wp_unslash($field['is_active'])));
+            $required = isset($field['required']) && sanitize_text_field(wp_unslash($field['required'])) ? 1 : 0;
 
             // Update is_active status
             update_post_meta($field_id, 'is_active', $is_active);
