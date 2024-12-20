@@ -41,7 +41,7 @@ function notion_forms_register_menu() {
         'notion-forms',
         'notion_forms_main_page',
         plugins_url('assets/notion-forms-icon.png', __FILE__),
-        20
+        22
     );
 
 
