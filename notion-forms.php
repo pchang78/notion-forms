@@ -27,10 +27,18 @@ require_once NOTION_FORMS_PATH . 'includes/db/create-post-type.php';
 require_once NOTION_FORMS_PATH . 'includes/frontend-form.php';
 
 // Register activation hook to create the database table.
-register_activation_hook(__FILE__, 'notion_forms_create_post_types');
+register_activation_hook(__FILE__, function() {
+    // Create custom post types
+    notion_forms_create_post_types();
+    
+    // Set default confirmation message if it doesn't exist
+    if (!get_option('notion_forms_confirmation_content')) {
+        add_option('notion_forms_confirmation_content', 'Thank you for your submission.');
+    }
+});
 
-
-
+// Register post types
+add_action('init', 'notion_forms_create_post_types');
 
 // Register the admin menu.
 function notion_forms_register_menu() {
