@@ -92,22 +92,30 @@ function notion_form_shortcode($no_styles = false) {
         $field_id = esc_attr($field->ID);
 
         $html .= '<div class="form-group">';
-        $html .= "<label for='$field_id'>$label</label>";
-
-        if ($field_type === 'select') {
-            $arrOptions = explode("|", $field_attr);
-            $select_options = "";
-            foreach($arrOptions AS $option) {
-                $select_options .= "<option value='$option'>$option</option>";
-            }
-            $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
-        }
-        elseif ($field_type === 'rich_text' && $field_attr === 'textarea') {
-            $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
-        } elseif ($field_type === 'phone_number') {
-            $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
+        
+        if ($field_type === 'checkbox') {
+            $html .= "<div class='checkbox-wrapper'>";
+            $html .= "<input type='checkbox' id='$field_id' name='$field_id' value='1' $required class='form-control-checkbox' />";
+            $html .= "<label for='$field_id'>$label</label>";
+            $html .= "</div>";
         } else {
-            $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
+            $html .= "<label for='$field_id'>$label</label>";
+            
+            if ($field_type === 'select') {
+                $arrOptions = explode("|", $field_attr);
+                $select_options = "";
+                foreach($arrOptions AS $option) {
+                    $select_options .= "<option value='$option'>$option</option>";
+                }
+                $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
+            }
+            elseif ($field_type === 'rich_text' && $field_attr === 'textarea') {
+                $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
+            } elseif ($field_type === 'phone_number') {
+                $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
+            } else {
+                $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
+            }
         }
 
         $html .= '</div>';
@@ -161,6 +169,11 @@ function notion_form_handle_submission($fields, $form_data) {
 
             // Handle different Notion field types
             switch ($field_type) {
+                case 'checkbox':
+                    $properties[$field_name] = [
+                        'checkbox' => !empty($value)
+                    ];
+                    break;
                 case 'rich_text':
                     $properties[$field_name] = [
                         'rich_text' => [['text' => ['content' => $value]]],
