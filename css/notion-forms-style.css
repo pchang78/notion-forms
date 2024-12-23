@@ -38,11 +38,31 @@
     background-color: #f1f1f1;
 }
 
+
+.notion-field-item table {
+    min-width: 500px;
+    margin-bottom: 10px;
+}
+
+.notion-field-item table td {
+    padding: 5px 0px;
+}
+
+
+.notion-field-item .label-input {
+    width: 100%;
+    padding: 5px 10px;
+}
+
+
 .notion-forms-list .ui-sortable-placeholder {
     border: 2px dashed #007cba;
     height: 40px;
     margin-bottom: 5px;
 }
+
+
+
 
 .sortable-placeholder {
     background-color: #f0f0f0;

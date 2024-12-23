@@ -139,24 +139,43 @@ function notion_forms_the_field_item($post, $active = false) {
     <p>
         <?php echo esc_html($field_name); ?> <small> <?php echo esc_html($field_type); ?> </small>
     </p>
-    <p class="attributes <?php echo esc_attr($hide); ?>">
-        <input type="checkbox" name="field[<?php echo esc_attr($field_id); ?>][required]" value="1" id="required<?php echo esc_attr($field_id); ?>" <?php echo esc_attr($checked); ?>> Required
-        <br>
+        <table class="attributes <?php echo esc_attr($hide); ?>">
+            <tr>
+                <td>
+                </td>
+                <td width="100%">
+                    <input type="checkbox" name="field[<?php echo esc_attr($field_id); ?>][required]" value="1" id="required<?php echo esc_attr($field_id); ?>" <?php echo esc_attr($checked); ?>>
+                    Required
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="label<?php echo esc_attr($field_id); ?>"> Label: </label>
+                </td>
+                <td>
+                        <input type="text" name="field[<?php echo esc_attr($field_id); ?>][label]" id="label<?php echo esc_attr($field_id); ?>" value="<?php echo esc_attr(get_post_meta($field_id, 'label', true) ?: $field_name); ?>" class="label-input">
+                </td>
+            </tr>
 <?php 
 if($field_type == "rich_text") :
 ?>
-        <label for="field_attr<?php echo esc_attr($field_id); ?>">
-        Field Type:
-        <select name="field[<?php echo esc_attr($field_id); ?>][field_attr]" id="field_attr<?php echo esc_attr($field_id); ?>">
-            <option value="text" <?php if($field_attr == "text") echo "selected"; ?>>Text</option>
-            <option value="textarea" <?php if($field_attr == "textarea") echo "selected"; ?>>Textarea</option>
-        </select> 
-        </label>
+        <tr>
+            <td nowrap>
+                <label for="field_attr<?php echo esc_attr($field_id); ?>"> Field Type: </label>
+            </td>
+            <td>
+                <select name="field[<?php echo esc_attr($field_id); ?>][field_attr]" id="field_attr<?php echo esc_attr($field_id); ?>">
+                    <option value="text" <?php if($field_attr == "text") echo "selected"; ?>>Text</option>
+                    <option value="textarea" <?php if($field_attr == "textarea") echo "selected"; ?>>Textarea</option>
+                </select> 
+            </td>
+        </tr>
 <?php
 endif;
 ?>
+        </table>
 
-    </p>
+
 </li>
 <?php
 }
@@ -169,12 +188,16 @@ function notion_forms_save_form() {
             $field_id = intval($field_id);
             $is_active = intval(sanitize_text_field(wp_unslash($field['is_active'])));
             $required = isset($field['required']) && sanitize_text_field(wp_unslash($field['required'])) ? 1 : 0;
+            $label = sanitize_text_field(wp_unslash($field['label']));
 
             // Update is_active status
             update_post_meta($field_id, 'is_active', $is_active);
             
             // Update required status
             update_post_meta($field_id, 'required', $required);
+
+            // Update label
+            update_post_meta($field_id, 'label', $label);
 
             // Update field_attr if it exists
             if(isset($field['field_attr']) && $field['field_attr']) {

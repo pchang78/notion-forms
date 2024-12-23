@@ -84,11 +84,11 @@ function notion_form_shortcode($no_styles = false) {
     foreach ($fields as $field) {
         // Get field metadata
         $required = get_post_meta($field->ID, 'required', true) ? 'required' : '';
+        $field_label = get_post_meta($field->ID, 'label', true);
         $field_type = get_post_meta($field->ID, 'field_type', true);
         $field_attr = get_post_meta($field->ID, 'field_attr', true);
         $column_id = get_post_meta($field->ID, 'column_id', true);
-        
-        $label = esc_html($field->post_title);
+        $label = esc_html($field_label ? $field_label : $field->post_title);
         $field_id = esc_attr($field->ID);
 
         $html .= '<div class="form-group">';
@@ -101,22 +101,35 @@ function notion_form_shortcode($no_styles = false) {
         } else {
             $html .= "<label for='$field_id'>$label</label>";
             
-            if ($field_type === 'select') {
-                $arrOptions = explode("|", $field_attr);
-                $select_options = "";
-                foreach($arrOptions AS $option) {
-                    $select_options .= "<option value='$option'>$option</option>";
-                }
-                $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
-            }
-            elseif ($field_type === 'rich_text' && $field_attr === 'textarea') {
-                $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
-            } elseif ($field_type === 'phone_number') {
-                $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
-            } elseif ($field_type === 'number') {
-                $html .= "<input type='number' step='any' id='$field_id' name='$field_id' $required class='form-control' />";
-            } else {
-                $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
+            switch ($field_type) {
+                case 'select':
+                    $arrOptions = explode("|", $field_attr);
+                    $select_options = "";
+                    foreach($arrOptions AS $option) {
+                        $select_options .= "<option value='$option'>$option</option>";
+                    }
+                    $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
+                    break;
+                    
+                case 'rich_text':
+                    if ($field_attr === 'textarea') {
+                        $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
+                    } else {
+                        $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
+                    }
+                    break;
+                    
+                case 'phone_number':
+                    $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
+                    break;
+                    
+                case 'number':
+                    $html .= "<input type='number' step='any' id='$field_id' name='$field_id' $required class='form-control' />";
+                    break;
+                    
+                default:
+                    $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
+                    break;
             }
         }
 
@@ -167,8 +180,6 @@ function notion_form_handle_submission($fields, $form_data) {
                 $value = sanitize_text_field($form_data[$field->ID]);
             }
 
-
-
             // Handle different Notion field types
             switch ($field_type) {
                 case 'checkbox':
@@ -203,9 +214,6 @@ function notion_form_handle_submission($fields, $form_data) {
             }
         }
     }
-
-
-
 
     // API request to add entry to Notion database
     $response = wp_remote_post('https://api.notion.com/v1/pages', [
