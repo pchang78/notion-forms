@@ -7,9 +7,17 @@
 .notion-forms-list {
     border: 1px solid #ccc;
     padding: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
     background-color: #f9f9f9;
 }
+
+.notion-forms-list li {
+    padding: 0px;
+    margin: 0px;
+    margin-bottom: 8px;
+}
+
+
 
 .notion-forms-list.highlight {
     border-color: #007cba;
@@ -26,8 +34,17 @@
     user-select: none;
 }
 
+.notion-field-item .field-hdr {
+    font-size: 1.2em;
+    font-weight: bold;
+    background-color: #2e65a8;
+    padding: 11px 15px;
+    color: white;
+}
+
 .notion-field-item small {
-    color: #007cba;
+    font-size: 0.8em;
+    color: #ffcc00;
 }
 
 .notion-field-item p {
@@ -45,7 +62,7 @@
 }
 
 .notion-field-item table td {
-    padding: 5px 0px;
+    padding: 5px 10px;
 }
 
 

@@ -136,9 +136,9 @@ function notion_forms_the_field_item($post, $active = false) {
 
     <li class="notion-field-item" data-id="<?php echo esc_attr($field_id); ?>" draggable="true">
     <input type="hidden" name="field[<?php echo esc_attr($field_id); ?>][is_active]" value="<?php echo esc_attr($active_val); ?>" id="is_active<?php echo esc_attr($field_id); ?>">
-    <p>
-        <?php echo esc_html($field_name); ?> <small> <?php echo esc_html($field_type); ?> </small>
-    </p>
+        <div class="field-hdr">
+            <?php echo esc_html($field_name); ?> <small> <?php echo esc_html($field_type); ?> </small>
+        </div>
         <table class="attributes <?php echo esc_attr($hide); ?>">
             <tr>
                 <td>
