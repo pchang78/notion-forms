@@ -113,6 +113,8 @@ function notion_form_shortcode($no_styles = false) {
                 $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
             } elseif ($field_type === 'phone_number') {
                 $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
+            } elseif ($field_type === 'number') {
+                $html .= "<input type='number' step='any' id='$field_id' name='$field_id' $required class='form-control' />";
             } else {
                 $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
             }
@@ -187,6 +189,11 @@ function notion_form_handle_submission($fields, $form_data) {
                     break;
                 case 'email':
                     $properties[$field_name] = ['email' => $value];
+                    break;
+                case 'number':
+                    // Convert to float and handle empty values
+                    $number_value = $value !== '' ? floatval($value) : null;
+                    $properties[$field_name] = ['number' => $number_value];
                     break;
                 default: // Fallback for other types, such as titles
                     $properties[$field_name] = [
