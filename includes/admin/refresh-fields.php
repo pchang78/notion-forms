@@ -89,7 +89,7 @@ function notion_forms_refresh_fields() {
             // Only update field_type and field_attr, preserve other meta values
             update_post_meta($post_id, 'field_type', $field['type']);
             
-            if($field['type'] === 'select' || $field['type'] === 'status') {
+            if($field['type'] === 'select' || $field['type'] === 'status' || $field['type'] === 'multi_select') {
                 $options = array_map(function($option) {
                     return $option['name'];
                 }, $field[$field['type']]['options']);
@@ -107,7 +107,7 @@ function notion_forms_refresh_fields() {
                 update_post_meta($post_id, 'is_active', 0);
                 update_post_meta($post_id, 'order_num', 0);
                 
-                if($field['type'] === 'select' || $field['type'] === 'status') {
+                if($field['type'] === 'select' || $field['type'] === 'status' || $field['type'] === 'multi_select') {
                     $options = array_map(function($option) {
                         return $option['name'];
                     }, $field[$field['type']]['options']);

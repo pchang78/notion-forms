@@ -127,6 +127,19 @@ function notion_form_shortcode($no_styles = false) {
                     }
                     break;
                     
+                case 'multi_select':
+                    $arrOptions = explode("|", $field_attr);
+                    $html .= "<div class='checkbox-group'>";
+                    foreach($arrOptions as $option) {
+                        $option_id = esc_attr($field_id . '_' . sanitize_title($option));
+                        $html .= "<div class='checkbox-option'>";
+                        $html .= "<input type='checkbox' id='$option_id' name='{$field_id}[]' value='$option' class='form-control-checkbox'>";
+                        $html .= "<label for='$option_id'>$option</label>";
+                        $html .= "</div>";
+                    }
+                    $html .= "</div>";
+                    break;
+                    
                 case 'rich_text':
                     if ($field_attr === 'textarea') {
                         $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
@@ -214,6 +227,13 @@ function notion_form_handle_submission($fields, $form_data) {
                     break;
                 case 'select':
                     $properties[$field_name] = ['select' => ['name' => $value]];
+                    break;
+                case 'multi_select':
+                    $selected_values = isset($form_data[$field->ID]) ? (array)$form_data[$field->ID] : [];
+                    $multi_select_options = array_map(function($option) {
+                        return ['name' => sanitize_text_field($option)];
+                    }, $selected_values);
+                    $properties[$field_name] = ['multi_select' => $multi_select_options];
                     break;
                 case 'status':
                     $properties[$field_name] = ['status' => ['name' => $value]];
