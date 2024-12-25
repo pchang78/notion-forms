@@ -116,6 +116,7 @@ function notion_forms_the_field_item($post, $active = false) {
     $field_name = $post->post_title;
     $field_type = get_post_meta($field_id, 'field_type', true);
     $field_attr = get_post_meta($field_id, 'field_attr', true);
+    $field_attr2 = get_post_meta($field_id, 'field_attr2', true);
     $required = get_post_meta($field_id, 'required', true);
     $is_active = $active ? 1 : 0;
     $hide = $active ? '' : 'hidden';
@@ -135,7 +136,7 @@ function notion_forms_the_field_item($post, $active = false) {
 
 
     <li class="notion-field-item" data-id="<?php echo esc_attr($field_id); ?>" draggable="true">
-    <input type="hidden" name="field[<?php echo esc_attr($field_id); ?>][is_active]" value="<?php echo esc_attr($active_val); ?>" id="is_active<?php echo esc_attr($field_id); ?>">
+    <input type="hidden" name="field<?php echo esc_attr($field_id); ?>_is_active" value="<?php echo esc_attr($active_val); ?>" id="is_active<?php echo esc_attr($field_id); ?>">
         <div class="field-hdr">
             <?php echo esc_html($field_name); ?> <small> <?php echo esc_html($field_type); ?> </small>
         </div>
@@ -144,7 +145,7 @@ function notion_forms_the_field_item($post, $active = false) {
                 <td>
                 </td>
                 <td width="100%">
-                    <input type="checkbox" name="field[<?php echo esc_attr($field_id); ?>][required]" value="1" id="required<?php echo esc_attr($field_id); ?>" <?php echo esc_attr($checked); ?>>
+                    <input type="checkbox" name="field<?php echo esc_attr($field_id); ?>_required" value="1" id="required<?php echo esc_attr($field_id); ?>" <?php echo esc_attr($checked); ?>>
                     Required
                 </td>
             </tr>
@@ -153,7 +154,7 @@ function notion_forms_the_field_item($post, $active = false) {
                     <label for="label<?php echo esc_attr($field_id); ?>"> Label: </label>
                 </td>
                 <td>
-                        <input type="text" name="field[<?php echo esc_attr($field_id); ?>][label]" id="label<?php echo esc_attr($field_id); ?>" value="<?php echo esc_attr(get_post_meta($field_id, 'label', true) ?: $field_name); ?>" class="label-input">
+                        <input type="text" name="field<?php echo esc_attr($field_id); ?>_label" id="label<?php echo esc_attr($field_id); ?>" value="<?php echo esc_attr(get_post_meta($field_id, 'label', true) ?: $field_name); ?>" class="label-input">
                 </td>
             </tr>
 <?php 
@@ -164,7 +165,7 @@ if($field_type == "rich_text") :
                 <label for="field_attr<?php echo esc_attr($field_id); ?>"> Field Type: </label>
             </td>
             <td>
-                <select name="field[<?php echo esc_attr($field_id); ?>][field_attr]" id="field_attr<?php echo esc_attr($field_id); ?>">
+                <select name="field<?php echo esc_attr($field_id); ?>_field_attr" id="field_attr<?php echo esc_attr($field_id); ?>">
                     <option value="text" <?php if($field_attr == "text") echo "selected"; ?>>Text</option>
                     <option value="textarea" <?php if($field_attr == "textarea") echo "selected"; ?>>Textarea</option>
                 </select> 
@@ -180,9 +181,9 @@ if($field_type == "select") :
                 <label for="field_attr2<?php echo esc_attr($field_id); ?>"> Display As: </label>
             </td>
             <td>
-                <select name="field[<?php echo esc_attr($field_id); ?>][field_attr2]" id="field_attr2<?php echo esc_attr($field_id); ?>">
-                    <option value="select" <?php if(get_post_meta($field_id, 'field_attr2', true) == "select") echo "selected"; ?>>Dropdown</option>
-                    <option value="radio" <?php if(get_post_meta($field_id, 'field_attr2', true) == "radio") echo "selected"; ?>>Radio Buttons</option>
+                <select name="field<?php echo esc_attr($field_id); ?>_field_attr2" id="field_attr2<?php echo esc_attr($field_id); ?>">
+                    <option value="select" <?php if($field_attr2 == "select") echo "selected"; ?>>Dropdown</option>
+                    <option value="radio" <?php if($field_attr2 == "radio") echo "selected"; ?>>Radio Buttons</option>
                 </select> 
             </td>
         </tr>
@@ -198,33 +199,41 @@ endif;
 
 
 function notion_forms_save_form() {
-    if(isset($_POST['notion_forms_save_form_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_save_form_nonce'])), 'notion_forms_save_form') && isset($_POST['field'])) {
+    if(isset($_POST['notion_forms_save_form_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_save_form_nonce'])), 'notion_forms_save_form') && isset($_POST['action']) && $_POST['action'] == "notion_forms_save_form") {
 
-        foreach ($_POST['field'] as $field_id => $field) {
-            $field_id = intval($field_id);
-            $is_active = intval(sanitize_text_field(wp_unslash($field['is_active'])));
-            $required = isset($field['required']) && sanitize_text_field(wp_unslash($field['required'])) ? 1 : 0;
-            $label = sanitize_text_field(wp_unslash($field['label']));
+        // Query fields based on is_active status.
+        $form_fields = get_posts(array(
+            'post_type' => 'notion_form_field',
+            'posts_per_page' => -1
+        ));
 
-            // Update is_active status
+        foreach($form_fields AS $field) {
+            $field_id = $field->ID;
+
+            $is_active = isset($_POST['field' . $field_id . '_is_active']) && sanitize_text_field(wp_unslash($_POST['field' . $field_id . '_is_active'])) == "1" ? 1 : 0;
             update_post_meta($field_id, 'is_active', $is_active);
-            
-            // Update required status
+
+            $required = isset($_POST['field' . $field_id . '_required']) && sanitize_text_field(wp_unslash($_POST['field' . $field_id . '_required'])) == "1" ? 1 : 0;
             update_post_meta($field_id, 'required', $required);
 
-            // Update label
-            update_post_meta($field_id, 'label', $label);
-
-            // Update field_attr if it exists
-            if(isset($field['field_attr']) && $field['field_attr']) {
-                update_post_meta($field_id, 'field_attr', sanitize_text_field($field['field_attr']));
+            if(isset($_POST['field' . $field_id . '_label'])) {
+                $label = sanitize_text_field(wp_unslash($_POST['field' . $field_id . '_label']));
+                update_post_meta($field_id, 'label', $label);
             }
 
-            // Update field_attr2 if it exists
-            if(isset($field['field_attr2']) && $field['field_attr2']) {
-                update_post_meta($field_id, 'field_attr2', sanitize_text_field($field['field_attr2']));
+            if(isset($_POST['field' . $field_id . '_field_attr'])) {
+                $field_attr = sanitize_text_field(wp_unslash($_POST['field' . $field_id . '_field_attr']));
+                update_post_meta($field_id, 'field_attr', $field_attr);
             }
+            if(isset($_POST['field' . $field_id . '_field_attr2'])) {
+                $field_attr2 = sanitize_text_field(wp_unslash($_POST['field' . $field_id . '_field_attr2']));
+                update_post_meta($field_id, 'field_attr2', $field_attr2);
+            }
+
+
         }
+
+
     }
 
     // Update order numbers
