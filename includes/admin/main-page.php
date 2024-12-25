@@ -172,6 +172,22 @@ if($field_type == "rich_text") :
         </tr>
 <?php
 endif;
+
+if($field_type == "select") :
+?>
+        <tr>
+            <td nowrap>
+                <label for="field_attr2<?php echo esc_attr($field_id); ?>"> Display As: </label>
+            </td>
+            <td>
+                <select name="field[<?php echo esc_attr($field_id); ?>][field_attr2]" id="field_attr2<?php echo esc_attr($field_id); ?>">
+                    <option value="select" <?php if(get_post_meta($field_id, 'field_attr2', true) == "select") echo "selected"; ?>>Dropdown</option>
+                    <option value="radio" <?php if(get_post_meta($field_id, 'field_attr2', true) == "radio") echo "selected"; ?>>Radio Buttons</option>
+                </select> 
+            </td>
+        </tr>
+<?php
+endif;
 ?>
         </table>
 
@@ -202,6 +218,11 @@ function notion_forms_save_form() {
             // Update field_attr if it exists
             if(isset($field['field_attr']) && $field['field_attr']) {
                 update_post_meta($field_id, 'field_attr', sanitize_text_field($field['field_attr']));
+            }
+
+            // Update field_attr2 if it exists
+            if(isset($field['field_attr2']) && $field['field_attr2']) {
+                update_post_meta($field_id, 'field_attr2', sanitize_text_field($field['field_attr2']));
             }
         }
     }

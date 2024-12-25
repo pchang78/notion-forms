@@ -87,6 +87,7 @@ function notion_form_shortcode($no_styles = false) {
         $field_label = get_post_meta($field->ID, 'label', true);
         $field_type = get_post_meta($field->ID, 'field_type', true);
         $field_attr = get_post_meta($field->ID, 'field_attr', true);
+        $field_attr2 = get_post_meta($field->ID, 'field_attr2', true);
         $column_id = get_post_meta($field->ID, 'column_id', true);
         $label = esc_html($field_label ? $field_label : $field->post_title);
         $field_id = esc_attr($field->ID);
@@ -104,11 +105,25 @@ function notion_form_shortcode($no_styles = false) {
             switch ($field_type) {
                 case 'select':
                     $arrOptions = explode("|", $field_attr);
-                    $select_options = "";
-                    foreach($arrOptions AS $option) {
-                        $select_options .= "<option value='$option'>$option</option>";
+                    $display_type = $field_attr2 === 'radio' ? 'radio' : 'select';
+                    
+                    if ($display_type === 'radio') {
+                        $html .= "<div class='radio-group'>";
+                        foreach($arrOptions as $option) {
+                            $option_id = esc_attr($field_id . '_' . sanitize_title($option));
+                            $html .= "<div class='radio-option'>";
+                            $html .= "<input type='radio' id='$option_id' name='$field_id' value='$option' $required class='form-control-radio'>";
+                            $html .= "<label for='$option_id'>$option</label>";
+                            $html .= "</div>";
+                        }
+                        $html .= "</div>";
+                    } else {
+                        $select_options = "";
+                        foreach($arrOptions as $option) {
+                            $select_options .= "<option value='$option'>$option</option>";
+                        }
+                        $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
                     }
-                    $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
                     break;
                     
                 case 'rich_text':
