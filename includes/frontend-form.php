@@ -142,6 +142,10 @@ function notion_form_shortcode($no_styles = false) {
                     $html .= "<input type='number' step='any' id='$field_id' name='$field_id' $required class='form-control' />";
                     break;
                     
+                case 'date':
+                    $html .= "<input type='date' id='$field_id' name='$field_id' $required class='form-control' />";
+                    break;
+                    
                 default:
                     $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
                     break;
@@ -220,6 +224,9 @@ function notion_form_handle_submission($fields, $form_data) {
                     // Convert to float and handle empty values
                     $number_value = $value !== '' ? floatval($value) : null;
                     $properties[$field_name] = ['number' => $number_value];
+                    break;
+                case 'date':
+                    $properties[$field_name] = ['date' => ['start' => $value]];
                     break;
                 default: // Fallback for other types, such as titles
                     $properties[$field_name] = [
