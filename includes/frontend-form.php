@@ -104,6 +104,7 @@ function notion_form_shortcode($no_styles = false) {
             
             switch ($field_type) {
                 case 'select':
+                case 'status':
                     $arrOptions = explode("|", $field_attr);
                     $display_type = $field_attr2 === 'radio' ? 'radio' : 'select';
                     
@@ -213,6 +214,9 @@ function notion_form_handle_submission($fields, $form_data) {
                     break;
                 case 'select':
                     $properties[$field_name] = ['select' => ['name' => $value]];
+                    break;
+                case 'status':
+                    $properties[$field_name] = ['status' => ['name' => $value]];
                     break;
                 case 'phone_number':
                     $properties[$field_name] = ['phone_number' => $value];
