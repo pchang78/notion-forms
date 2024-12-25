@@ -19,6 +19,9 @@
         case 'notion-forms_page_notion-forms-settings':
                 $current_page = 'notion-forms-settings';
                 break;
+        case 'notion-forms_page_notion-forms-documentation':
+                $current_page = 'notion-forms-documentation';
+                break;
         }
 
     ?>
@@ -26,6 +29,7 @@
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-confirmation')); ?>" class="<?php echo $current_page === 'notion-forms-confirmation' ? 'active' : ''; ?>">Confirmation Page</a>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-styles')); ?>" class="<?php echo $current_page === 'notion-forms-styles' ? 'active' : ''; ?>">Styles</a>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-settings')); ?>" class="<?php echo $current_page === 'notion-forms-settings' ? 'active' : ''; ?>">Settings</a>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-documentation')); ?>" class="<?php echo $current_page === 'notion-forms-documentation' ? 'active' : ''; ?>">Documentation</a>
 
 
                 </nav>
