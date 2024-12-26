@@ -25,10 +25,15 @@
         }
 
     ?>
+
+    <?php if (notion_forms_is_setup()) : ?>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms')); ?>" class="<?php echo $current_page === 'notion-forms' ? 'active' : ''; ?>">Notion Form</a>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-confirmation')); ?>" class="<?php echo $current_page === 'notion-forms-confirmation' ? 'active' : ''; ?>">Confirmation Page</a>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-styles')); ?>" class="<?php echo $current_page === 'notion-forms-styles' ? 'active' : ''; ?>">Styles</a>
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-settings')); ?>" class="<?php echo $current_page === 'notion-forms-settings' ? 'active' : ''; ?>">Settings</a>
+
+    <?php endif; ?>
+
             <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms-documentation')); ?>" class="<?php echo $current_page === 'notion-forms-documentation' ? 'active' : ''; ?>">Documentation</a>
 
 

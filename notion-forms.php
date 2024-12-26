@@ -18,6 +18,7 @@ define('NOTION_FORMS_PATH', plugin_dir_path(__FILE__));
 define('NOTION_FORMS_URL', plugin_dir_url(__FILE__));
 
 // Include necessary files.
+require_once NOTION_FORMS_PATH . 'includes/admin/plugin-startup.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/settings-page.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/confirmation-page.php';
 require_once NOTION_FORMS_PATH . 'includes/admin/styles-page.php';

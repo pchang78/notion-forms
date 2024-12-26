@@ -1,7 +1,10 @@
 <?php
 function notion_forms_main_page() {
-    global $wpdb;
 
+    if(!notion_forms_is_setup()) {
+        notion_forms_setup_page();
+        return;
+    }
 
     if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_refresh_fields" && isset($_POST['notion_forms_refresh_fields_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_refresh_fields_nonce'])), 'notion_forms_refresh_fields')) {
         notion_forms_refresh_fields();
@@ -13,7 +16,6 @@ function notion_forms_main_page() {
         notion_forms_admin_msg("Form saved!");
     }
 
-    $table_name = $wpdb->prefix . 'notion_forms';
 
     // Query fields based on is_active status.
     $available_fields = get_posts(array(

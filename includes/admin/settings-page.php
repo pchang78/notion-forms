@@ -2,6 +2,10 @@
 
 function notion_forms_settings_page() {
 
+    if(!notion_forms_is_setup()) {
+        notion_forms_setup_page();
+        return;
+    }
 
     require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
 

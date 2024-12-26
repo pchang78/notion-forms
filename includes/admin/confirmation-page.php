@@ -1,5 +1,14 @@
 <?php
 function notion_forms_confirmation_page() {
+
+    if(!notion_forms_is_setup()) {
+        notion_forms_setup_page();
+        return;
+    }
+
+
+
+
     // Check user permissions
     if (!current_user_can('manage_options')) {
         return;

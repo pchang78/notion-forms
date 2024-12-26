@@ -2,6 +2,14 @@
 
 // Render the Styles page
 function notion_forms_styles_page() {
+
+    if(!notion_forms_is_setup()) {
+        notion_forms_setup_page();
+        return;
+    }
+
+
+
     // Check if the user has submitted the form
     if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion_forms_css_nonce'])) {
         if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_css_nonce'])), 'save_notion_forms_css')) {
