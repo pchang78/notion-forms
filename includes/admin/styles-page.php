@@ -58,7 +58,7 @@ Given the following html form code:
 <?php echo esc_html(str_replace(">", "&gt;", str_replace("<", "&lt;", notion_form_shortcode(true)))); ?>
 
 </textarea>
-<button id="copyButton" type="button">Copy to Prompt to Clipboard</button>
+<button id="copyButton" type="button">Copy Prompt to Clipboard</button>
 
 <script>
   // JavaScript to handle the copy functionality
