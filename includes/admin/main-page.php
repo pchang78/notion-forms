@@ -1,19 +1,19 @@
 <?php
-function notion_forms_main_page() {
+function form_sync_for_notion_main_page() {
 
-    if(!notion_forms_is_setup()) {
-        notion_forms_setup_page();
+    if(!form_sync_for_notion_is_setup()) {
+        form_sync_for_notion_setup_page();
         return;
     }
 
-    if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_refresh_fields" && isset($_POST['notion_forms_refresh_fields_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_refresh_fields_nonce'])), 'notion_forms_refresh_fields')) {
-        notion_forms_refresh_fields();
-        notion_forms_admin_msg("Fields refreshed successfully!");
-
+    if( isset($_POST["action"]) && $_POST["action"] == "form_sync_for_notion_refresh_fields" && isset($_POST['form_sync_for_notion_refresh_fields_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['form_sync_for_notion_refresh_fields_nonce'])), 'form_sync_for_notion_refresh_fields')) { 
+        form_sync_for_notion_refresh_fields(); 
+        form_sync_for_notion_admin_msg("Fields refreshed successfully!");
     }
-    if(isset($_POST["action"]) && $_POST["action"] == "notion_forms_save_form") {
-        notion_forms_save_form();
-        notion_forms_admin_msg("Form saved!");
+
+    if(isset($_POST["action"]) && $_POST["action"] == "form_sync_for_notion_save_form") {
+        form_sync_for_notion_save_form();
+        form_sync_for_notion_admin_msg("Form saved!");
     }
 
 
@@ -51,20 +51,20 @@ function notion_forms_main_page() {
     ));
 
 
-    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+    require_once FORM_SYNC_FOR_NOTION_PATH . 'includes/admin/admin-header.php';
 
 
     ?>
 
-    <div class="wrap" id="notion-forms-container">
-        <h1>Notion Forms</h1>
+    <div class="wrap" id="form-sync-for-notion-container">
+        <h1>Form Sync for Notion</h1>
         <br>
-        <div class="notion-forms-shortcode">
-            <label for="notion-forms-shortcode-input">
+        <div class="form-sync-for-notion-shortcode">
+            <label for="form-sync-for-notion-shortcode-input">
                 <strong>Use this shortcode to embed the form:</strong>
             </label>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="text" id="notion-forms-shortcode-input" value="[notion_forms]" readonly style="width: 300px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9; font-family: monospace;" 
+                <input type="text" id="form-sync-for-notion-shortcode-input" value="[form_sync_for_notion]" readonly style="width: 300px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9; font-family: monospace;" 
         />
                 <button type="button" id="copy-shortcode-button" style="padding: 5px 10px; border: none; background-color: #0073aa; color: white; border-radius: 4px; cursor: pointer;"> Copy </button>
             </div>
@@ -75,31 +75,31 @@ function notion_forms_main_page() {
 
         <!-- Refresh Fields Form -->
         <form method="post">
-            <?php wp_nonce_field('notion_forms_refresh_fields', 'notion_forms_refresh_fields_nonce'); ?>
-            <input type="hidden" name="action" value="notion_forms_refresh_fields">
+            <?php wp_nonce_field('form_sync_for_notion_refresh_fields', 'form_sync_for_notion_refresh_fields_nonce'); ?>
+            <input type="hidden" name="action" value="form_sync_for_notion_refresh_fields">
             <?php submit_button('Refresh Fields'); ?>
         </form>
         <div class="wp-clearfix">
             <form method="post">
-            <?php wp_nonce_field('notion_forms_save_form', 'notion_forms_save_form_nonce'); ?>
-            <div id="notion-forms-wrapper">
+            <?php wp_nonce_field('form_sync_for_notion_save_form', 'form_sync_for_notion_save_form_nonce'); ?>
+            <div id="form-sync-for-notion-wrapper">
                 <div class="postbox-container" style="width: 25%; float: left; margin-right: 2%;">
-                    <input type="hidden" name="action" value="notion_forms_save_form">
-                    <input type="hidden" name="field_order" value="" id="notion_forms_field_order">
+                    <input type="hidden" name="action" value="form_sync_for_notion_save_form">
+                    <input type="hidden" name="field_order" value="" id="form_sync_for_notion_field_order">
                     <!-- Available Fields -->
                     <h2>Available Fields</h2>
-                    <ul id="available-fields" class="notion-forms-list drop-area">
+                    <ul id="available-fields" class="form-sync-for-notion-list drop-area">
                         <?php foreach ($available_fields as $field): ?>
-                            <?php notion_forms_the_field_item($field); ?>
+                            <?php form_sync_for_notion_the_field_item($field); ?>
                         <?php endforeach; ?>
 
                     </ul>
                 </div>
                 <div class="postbox-container" style="width: 60%; float: left;">
                     <h2>Form Fields</h2>
-                    <ul id="form-fields" class="notion-forms-list drop-area">
+                    <ul id="form-fields" class="form-sync-for-notion-list drop-area">
                         <?php foreach ($form_fields as $field): ?>
-                            <?php notion_forms_the_field_item($field, true); ?>
+                            <?php form_sync_for_notion_the_field_item($field, true); ?>
                         <?php endforeach; ?>
 
                     </ul>
@@ -113,7 +113,7 @@ function notion_forms_main_page() {
 }
 
 // Render individual field items
-function notion_forms_the_field_item($post, $active = false) {
+function form_sync_for_notion_the_field_item($post, $active = false) {
     $field_id = $post->ID;
     $field_name = $post->post_title;
     $field_type = get_post_meta($field_id, 'field_type', true);
@@ -137,7 +137,7 @@ function notion_forms_the_field_item($post, $active = false) {
 ?>
 
 
-    <li class="notion-field-item" data-id="<?php echo esc_attr($field_id); ?>" draggable="true">
+    <li class="form-sync-for-notion-field-item" data-id="<?php echo esc_attr($field_id); ?>" draggable="true">
     <input type="hidden" name="field<?php echo esc_attr($field_id); ?>_is_active" value="<?php echo esc_attr($active_val); ?>" id="is_active<?php echo esc_attr($field_id); ?>">
         <div class="field-hdr">
             <?php echo esc_html($field_name); ?> <small> <?php echo esc_html($field_type); ?> </small>
@@ -199,9 +199,8 @@ endif;
 <?php
 }
 
-
-function notion_forms_save_form() {
-    if(isset($_POST['notion_forms_save_form_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_save_form_nonce'])), 'notion_forms_save_form') && isset($_POST['action']) && $_POST['action'] == "notion_forms_save_form") {
+function form_sync_for_notion_save_form() {
+    if(isset($_POST['form_sync_for_notion_save_form_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['form_sync_for_notion_save_form_nonce'])), 'form_sync_for_notion_save_form') && isset($_POST['action']) && $_POST['action'] == "form_sync_for_notion_save_form") {
 
         // Query fields based on is_active status.
         $form_fields = get_posts(array(

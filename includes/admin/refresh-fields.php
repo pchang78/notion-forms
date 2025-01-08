@@ -1,11 +1,11 @@
 <?php
 
-function notion_forms_refresh_fields() {
+function form_sync_for_notion_refresh_fields() {
     global $wpdb;
 
     // Fetch API key and database URL from settings.
-    $api_key = get_option('notion_form_api_key');
-    $database_url = get_option('notion_form_database_url');
+    $api_key = get_option('form_sync_for_notion_api_key');
+    $database_url = get_option('form_sync_for_notion_database_url');
 
     if (!$api_key || !$database_url) {
         echo '<div class="notice notice-error"><p>API Key or Database URL not set.</p></div>';

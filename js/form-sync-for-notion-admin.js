@@ -1,6 +1,8 @@
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const copyButton = document.getElementById('copy-shortcode-button');
-    const inputField = document.getElementById('notion-forms-shortcode-input');
+    const inputField = document.getElementById('form-sync-for-notion-shortcode-input');
     const feedback = document.getElementById('copy-feedback');
 
     if (copyButton && inputField) {

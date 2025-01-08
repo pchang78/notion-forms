@@ -1,7 +1,7 @@
 <?php
 
 // Create the database table.
-function notion_forms_create_post_types() {
+function form_sync_for_notion_create_post_types() {
     // Register Custom Post Type for Notion Form Fields
     register_post_type('notion_form_field', array(
         'labels' => array(

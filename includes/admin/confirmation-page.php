@@ -1,8 +1,8 @@
 <?php
-function notion_forms_confirmation_page() {
+function form_sync_for_notion_confirmation_page() {
 
-    if(!notion_forms_is_setup()) {
-        notion_forms_setup_page();
+    if(!form_sync_for_notion_is_setup()) {
+        form_sync_for_notion_setup_page();
         return;
     }
 
@@ -15,32 +15,32 @@ function notion_forms_confirmation_page() {
     }
 
     // Save the confirmation content
-    if (isset($_POST['notion_forms_confirmation_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_confirmation_nonce'])), 'notion_forms_confirmation_save') && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion_forms_confirmation_content'])) {
-        $confirmation_content = wp_kses_post(wp_unslash($_POST['notion_forms_confirmation_content']));
-        update_option('notion_forms_confirmation_content', $confirmation_content);
+    if (isset($_POST['form_sync_for_notion_confirmation_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['form_sync_for_notion_confirmation_nonce'])), 'form_sync_for_notion_confirmation_save') && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['form_sync_for_notion_confirmation_content'])) {
+        $confirmation_content = wp_kses_post(wp_unslash($_POST['form_sync_for_notion_confirmation_content']));
+        update_option('form_sync_for_notion_confirmation_content', $confirmation_content);
         echo '<div class="notice notice-success is-dismissible"><p>Confirmation content updated successfully.</p></div>';
     }
 
     // Get the current confirmation content
-    $confirmation_content = get_option('notion_forms_confirmation_content', '');
+    $confirmation_content = get_option('form_sync_for_notion_confirmation_content', '');
 
-    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+    require_once FORM_SYNC_FOR_NOTION_PATH . 'includes/admin/admin-header.php';
 
 
     ?>
-    <div class="wrap" id="notion-forms-container">
+    <div class="wrap" id="form-sync-for-notion-container">
         <h1>Confirmation Page</h1>
         <form method="POST" action="">
-            <?php wp_nonce_field('notion_forms_confirmation_save', 'notion_forms_confirmation_nonce'); ?>
+            <?php wp_nonce_field('form_sync_for_notion_confirmation_save', 'form_sync_for_notion_confirmation_nonce'); ?>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row">
-                        <label for="notion_forms_confirmation_content">Confirmation Content</label>
+                        <label for="form_sync_for_notion_confirmation_content">Confirmation Content</label>
                     </th>
                     <td>
                         <?php
-                        wp_editor($confirmation_content, 'notion_forms_confirmation_content', [
-                            'textarea_name' => 'notion_forms_confirmation_content',
+                        wp_editor($confirmation_content, 'form_sync_for_notion_confirmation_content', [
+                            'textarea_name' => 'form_sync_for_notion_confirmation_content',
                             'textarea_rows' => 10,
                             'media_buttons' => false,
                         ]);

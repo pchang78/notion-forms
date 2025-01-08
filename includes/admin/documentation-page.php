@@ -1,11 +1,11 @@
 <?php
 
-function notion_forms_documentation_page() {
+function form_sync_for_notion_documentation_page() {
 
-    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+    require_once FORM_SYNC_FOR_NOTION_PATH . 'includes/admin/admin-header.php';
 
     ?>
-    <div class="wrap" id="notion-forms-container">
+    <div class="wrap" id="form-sync-for-notion-container">
         <h1>Documentation</h1>
         <p>
             <a href="https://everydaytech.tv/wp/notion-forms/documentation/getting-started/" target="_blank">Getting Started</a>

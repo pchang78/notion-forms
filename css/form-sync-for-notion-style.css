@@ -1,17 +1,17 @@
-#notion-forms-container {
+#form-sync-for-notion-container {
     padding: 5px 20px;
 }
 
 
 
-.notion-forms-list {
+.form-sync-for-notion-list {
     border: 1px solid #ccc;
     padding: 10px;
     margin-bottom: 0px;
     background-color: #f9f9f9;
 }
 
-.notion-forms-list li {
+.form-sync-for-notion-list li {
     padding: 0px;
     margin: 0px;
     margin-bottom: 8px;
@@ -19,12 +19,12 @@
 
 
 
-.notion-forms-list.highlight {
+.form-sync-for-notion-list.highlight {
     border-color: #007cba;
     background-color: #e7f4fc;
 }
 
-.notion-field-item {
+.form-sync-for-notion-field-item {
     background-color: #fff;
     border: 1px solid #ddd;
     padding: 0px 15px;
@@ -34,7 +34,7 @@
     user-select: none;
 }
 
-.notion-field-item .field-hdr {
+.form-sync-for-notion-field-item .field-hdr {
     font-size: 1.2em;
     font-weight: bold;
     background-color: #2e65a8;
@@ -42,37 +42,37 @@
     color: white;
 }
 
-.notion-field-item small {
+.form-sync-for-notion-field-item small {
     font-size: 0.8em;
     color: #ffcc00;
 }
 
-.notion-field-item p {
+.form-sync-for-notion-field-item p {
     font-size: 1.2em;
 }
 
-.notion-field-item:hover {
+.form-sync-for-notion-field-item:hover {
     background-color: #f1f1f1;
 }
 
 
-.notion-field-item table {
+.form-sync-for-notion-field-item table {
     min-width: 500px;
     margin-bottom: 10px;
 }
 
-.notion-field-item table td {
+.form-sync-for-notion-field-item table td {
     padding: 5px 10px;
 }
 
 
-.notion-field-item .label-input {
+.form-sync-for-notion-field-item .label-input {
     width: 100%;
     padding: 5px 10px;
 }
 
 
-.notion-forms-list .ui-sortable-placeholder {
+.form-sync-for-notion-list .ui-sortable-placeholder {
     border: 2px dashed #007cba;
     height: 40px;
     margin-bottom: 5px;
@@ -81,7 +81,7 @@
 
 
 
-.sortable-placeholder {
+.form-sync-for-notion-list .ui-sortable-placeholder {
     background-color: #f0f0f0;
     border: 2px dashed #ccc;
     height: 40px;
@@ -89,7 +89,7 @@
 }
 
 
-.notion-forms-header {
+.form-sync-for-notion-header {
     background-color: #2e65a8; /* Dark blue background */
     color: white;
     width: 100%;
@@ -101,7 +101,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     z-index: 9999;
 }
-.notion-forms-header-inner {
+.form-sync-for-notion-header-inner {
     max-width: 100%; /* Ensure it spans the full content width */
     padding: 5px 20px;
     display: flex;
@@ -109,7 +109,7 @@
     align-items: center;
 }
 
-.notion-forms-logo {
+.form-sync-for-notion-logo {
     height: 50px; /* Adjust to fit desired size */
     max-height: 100%; /* Prevent overflowing */
     width: auto; /* Maintain aspect ratio */
@@ -117,7 +117,7 @@
 }
 
 
-.notion-forms-title {
+.form-sync-for-notion-title {
     font-size: 24px;
     margin: 0;
     font-weight: bold;
@@ -126,7 +126,7 @@
 
 }
 
-.notion-forms-nav  {
+.form-sync-for-notion-nav  {
     display: flex;
     justify-content: flex-start; /* Aligns the nav items to the left */
     flex-grow: 1; /* Allows the nav to expand and take available space */
@@ -135,20 +135,20 @@
 }
 
 
-.notion-forms-nav a {
+.form-sync-for-notion-nav a {
     margin-left: 15px;
     text-decoration: none;
     color: #ffffff; /* White text for links */
     font-weight: 500;
 }
-.notion-forms-nav a:hover {
+.form-sync-for-notion-nav a:hover {
     text-decoration: underline;
 }
-.notion-forms-nav a.active {
+.form-sync-for-notion-nav a.active {
     font-weight: bold;
     color: #ffcc00; /* Highlighted tab color */
 }
-.notion-forms-body {
+.form-sync-for-notion-body {
     margin: 0;
     padding: 20px;
     background: #ffffff;
@@ -159,7 +159,7 @@
 #wpcontent {
     padding-left: 0 !important;
 }
-.notion-forms-header {
+.form-sync-for-notion-header {
     margin-left: 0 !important;
 }
 

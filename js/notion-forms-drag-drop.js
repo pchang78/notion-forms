@@ -13,14 +13,14 @@ jQuery(document).ready(function ($) {
                 return $(this).data('id');
             }).get();
             var serializedString = serializedOrder.join(',');
-            $("#notion_forms_field_order").val(serializedString);
+            $("#form_sync_for_notion_field_order").val(serializedString);
         }
     });
 
     // Drag-and-drop between Available Fields and Form Fields
-    $('.notion-forms-list').sortable({
-        connectWith: '.notion-forms-list',
-        items: '.notion-field-item',
+    $('.form-sync-for-notion-list').sortable({
+        connectWith: '.form-sync-for-notion-list',
+        items: '.form-sync-for-notion-field-item',
         update: function (event, ui) {
             const sourceId = ui.sender ? ui.sender.attr('id') : $(this).attr('id');
             const targetId = $(this).attr('id');

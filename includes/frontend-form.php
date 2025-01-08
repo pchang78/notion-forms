@@ -1,12 +1,12 @@
 <?php
 // Add a shortcode to generate a form based on the local "notion_forms" database
 
-function notion_form_shortcode($no_styles = false) {
+function form_sync_for_notion_shortcode($no_styles = false) {
     // Start output buffering to prevent headers already sent error
     ob_start();
     
     $form_message = '';
-    $submission_token = wp_create_nonce('notion_form_submission');
+    $submission_token = wp_create_nonce('form_sync_for_notion_submission');
     
     // Check if this is a successful submission redirect
     if (isset($_GET['submission']) && $_GET['submission'] === 'success') {
@@ -15,9 +15,9 @@ function notion_form_shortcode($no_styles = false) {
     }
     
     // Handle form submission before any output
-    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion-form-submit'])) {
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['form-sync-for-notion-submit'])) {
         // Verify nonce
-        if (isset($_POST['submission_token']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['submission_token'])), 'notion_form_submission')) {
+        if (isset($_POST['submission_token']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['submission_token'])), 'form_sync_for_notion_submission')) {
             $form_message = '<div class="error">Invalid submission. Please try again.</div>';
         } else {
             // Fetch active fields for submission
@@ -32,7 +32,7 @@ function notion_form_shortcode($no_styles = false) {
                 )
             ));
             
-            $submission_result = notion_form_handle_submission($fields, $_POST);
+            $submission_result = form_sync_for_notion_handle_submission($fields, $_POST);
             if ($submission_result === true) {
                 $redirect_url = add_query_arg(
                     array(
@@ -69,17 +69,17 @@ function notion_form_shortcode($no_styles = false) {
     ));
 
     // Start building the HTML form
-    $html = '<div id="notion-form-container">';
+    $html = '<div id="form-sync-for-notion-container">';
     
     // Add form message if exists
     if ($form_message) {
         $html .= $form_message;
     }
     
-    $html .= '<form id="notion-generated-form" method="POST">';
-    $html .= '<input type="hidden" name="notion-form-submit" value="1">';
+    $html .= '<form id="form-sync-for-notion-generated-form" method="POST">';
+    $html .= '<input type="hidden" name="form-sync-for-notion-submit" value="1">';
     // Add the nonce field
-    $html .= wp_nonce_field('notion_form_submission', 'submission_token', true, false);
+    $html .= wp_nonce_field('form_sync_for_notion_submission', 'submission_token', true, false);
 
     foreach ($fields as $field) {
         // Get field metadata
@@ -173,7 +173,7 @@ function notion_form_shortcode($no_styles = false) {
     $html .= '</form></div>';
 
     if(!$no_styles) {
-        $css = get_option('notion_forms_css');
+        $css = get_option('form_sync_for_notion_css');
         if(isset($css) && $css) {
             $html .= "<style>$css</style>";
         }
@@ -182,13 +182,13 @@ function notion_form_shortcode($no_styles = false) {
     ob_end_clean(); // Clear the buffer before returning
     return $html;
 }
-add_shortcode('notion_forms', 'notion_form_shortcode');
+add_shortcode('form_sync_for_notion', 'form_sync_for_notion_shortcode');
 
 
 
-function notion_form_handle_submission($fields, $form_data) {
-    $api_key = get_option('notion_form_api_key');
-    $database_url = get_option('notion_form_database_url');
+function form_sync_for_notion_handle_submission($fields, $form_data) {
+    $api_key = get_option('form_sync_for_notion_api_key');
+    $database_url = get_option('form_sync_for_notion_database_url');
 
     // Extract the database ID from the full URL
     preg_match('/[a-f0-9]{32}/', $database_url, $matches);

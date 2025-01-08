@@ -1,25 +1,25 @@
 <?php
 
 // Render the Styles page
-function notion_forms_styles_page() {
+function form_sync_for_notion_styles_page() {
 
-    if(!notion_forms_is_setup()) {
-        notion_forms_setup_page();
+    if(!form_sync_for_notion_is_setup()) {
+        form_sync_for_notion_setup_page();
         return;
     }
 
 
 
     // Check if the user has submitted the form
-    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notion_forms_css_nonce'])) {
-        if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['notion_forms_css_nonce'])), 'save_notion_forms_css')) {
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['form_sync_for_notion_css_nonce'])) {
+        if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['form_sync_for_notion_css_nonce'])), 'save_form_sync_for_notion_css')) {
             wp_die('Security check failed.');
         }
 
         // Save the custom CSS
-        if(isset($_POST['notion_forms_css'])) {
-            $custom_css = sanitize_textarea_field(wp_unslash($_POST['notion_forms_css']));
-            update_option('notion_forms_css', $custom_css);
+        if(isset($_POST['form_sync_for_notion_css'])) {
+            $custom_css = sanitize_textarea_field(wp_unslash($_POST['form_sync_for_notion_css']));
+            update_option('form_sync_for_notion_css', $custom_css);
         }
 
         // Display success message
@@ -27,20 +27,20 @@ function notion_forms_styles_page() {
     }
 
     // Retrieve the saved CSS
-    $custom_css = get_option('notion_forms_css', '');
-    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+    $custom_css = get_option('form_sync_for_notion_css', '');
+    require_once FORM_SYNC_FOR_NOTION_PATH . 'includes/admin/admin-header.php';
 
     ?>
-    <div class="wrap" id="notion-forms-container">
-        <h1>Notion Forms Styles</h1>
+    <div class="wrap" id="form-sync-for-notion-container">
+        <h1>Form Sync for Notion Styles</h1>
         <form method="POST">
-            <?php wp_nonce_field('save_notion_forms_css', 'notion_forms_css_nonce'); ?>
+            <?php wp_nonce_field('save_form_sync_for_notion_css', 'form_sync_for_notion_css_nonce'); ?>
 
             <table class="form-table">
                 <tr valign="top">
-                    <th scope="row"><label for="notion_forms_css">Custom CSS</label></th>
+                    <th scope="row"><label for="form_sync_for_notion_css">Custom CSS</label></th>
                     <td>
-                        <textarea id="notion_forms_css" name="notion_forms_css" rows="20" cols="50" class="large-text code"><?php echo esc_textarea($custom_css); ?></textarea>
+                        <textarea id="form_sync_for_notion_css" name="form_sync_for_notion_css" rows="20" cols="50" class="large-text code"><?php echo esc_textarea($custom_css); ?></textarea>
                     </td>
                 </tr>
             </table>
@@ -63,37 +63,12 @@ function notion_forms_styles_page() {
     <form>
 <textarea class="hidden" id="ai_prompt">
 Given the following html form code:
-<?php echo esc_html(str_replace(">", "&gt;", str_replace("<", "&lt;", notion_form_shortcode(true)))); ?>
+<?php echo esc_html(str_replace(">", "&gt;", str_replace("<", "&lt;", form_sync_for_notion_shortcode(true)))); ?>
 
 </textarea>
 <button id="copyButton" type="button">Copy Prompt to Clipboard</button>
 
-<script>
-  // JavaScript to handle the copy functionality
-  document.getElementById('copyButton').addEventListener('click', function () {
-    event.preventDefault();
-    const textarea = document.getElementById('ai_prompt');
-    const ai_description = document.getElementById('ai_description');
-    textarea.select();
-    textarea.setSelectionRange(0, 99999); // For mobile devices
 
-    ai_description_value = ai_description.value.trim();
-    prompt_value = textarea.value;
-
-    if(ai_description_value.length === 0) {
-        ai_description_value = "clean";
-    }
-    prompt_value = prompt_value + "Generate CSS to create a " + ai_description_value + " online form.  Have it scoped to #notion-form-container";
-    // Copy the text to the clipboard
-    navigator.clipboard.writeText(prompt_value)
-      .then(() => {
-        alert('Prompt copied to clipboard!  Paste this prompt into your AI tool and then paste the generated CSS code into the text box above.');
-      })
-      .catch(err => {
-        console.error('Failed to copy text: ', err);
-      });
-  });
-</script>
 </form>
 
 

@@ -1,25 +1,25 @@
 <?php
 
-function notion_forms_settings_page() {
+function form_sync_for_notion_settings_page() {
 
-    if(!notion_forms_is_setup()) {
-        notion_forms_setup_page();
+    if(!form_sync_for_notion_is_setup()) {
+        form_sync_for_notion_setup_page();
         return;
     }
 
-    require_once NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+    require_once FORM_SYNC_FOR_NOTION_PATH . 'includes/admin/admin-header.php';
 
     ?>
-    <div class="wrap" id="notion-forms-container">
-        <h1>Notion Forms Settings</h1>
+    <div class="wrap" id="form-sync-for-notion-container">
+        <h1>Form Sync for Notion Settings</h1>
         <?php 
         // Display settings errors or success messages.
-        settings_errors('notion_forms_messages'); 
+        settings_errors('form_sync_for_notion_messages'); 
         ?>
         <form method="post" action="options.php">
             <?php
-            settings_fields('notion_forms_settings');
-            do_settings_sections('notion-forms-settings');
+            settings_fields('form_sync_for_notion_settings');
+            do_settings_sections('form-sync-for-notion-settings');
             submit_button();
             ?>
         </form>
@@ -28,38 +28,38 @@ function notion_forms_settings_page() {
 }
 
 // Register settings for the plugin.
-function notion_forms_register_settings() {
+function form_sync_for_notion_register_settings() {
     add_settings_section(
-        'notion_forms_main_settings',
+        'form_sync_for_notion_main_settings',
         'Main Settings',
         null,
-        'notion-forms-settings'
+        'form-sync-for-notion-settings'
     );
 
     add_settings_field(
         'notion_form_api_key',
         'Notion API Key',
-        'notion_forms_api_key_callback',
-        'notion-forms-settings',
-        'notion_forms_main_settings'
+        'form_sync_for_notion_api_key_callback',
+        'form-sync-for-notion-settings',
+        'form_sync_for_notion_main_settings'
     );
 
     add_settings_field(
         'notion_form_database_url',
         'Notion Database URL',
-        'notion_forms_database_url_callback',
-        'notion-forms-settings',
-        'notion_forms_main_settings'
+        'form_sync_for_notion_database_url_callback',
+        'form-sync-for-notion-settings',
+        'form_sync_for_notion_main_settings'
     );
 
-    register_setting('notion_forms_settings', 'notion_form_api_key', [
+    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_api_key', [
         'sanitize_callback' => 'sanitize_text_field',
         'type' => 'string',
         'show_in_rest' => false,
         'default' => '',
     ]);
 
-    register_setting('notion_forms_settings', 'notion_form_database_url', [
+    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_database_url', [
         'sanitize_callback' => 'esc_url_raw',
         'type' => 'string',
         'show_in_rest' => false,
@@ -70,15 +70,15 @@ function notion_forms_register_settings() {
 
 
 }
-add_action('admin_init', 'notion_forms_register_settings');
+add_action('admin_init', 'form_sync_for_notion_register_settings');
 
 // Callbacks for settings fields.
-function notion_forms_api_key_callback() {
-    $value = get_option('notion_form_api_key', '');
-    echo '<input type="text" name="notion_form_api_key" value="' . esc_attr($value) . '" class="regular-text">';
+function form_sync_for_notion_api_key_callback() {
+    $value = get_option('form_sync_for_notion_api_key', '');
+    echo '<input type="text" name="form_sync_for_notion_api_key" value="' . esc_attr($value) . '" class="regular-text">';
 }
 
-function notion_forms_database_url_callback() {
-    $value = get_option('notion_form_database_url', '');
-    echo '<input type="text" name="notion_form_database_url" value="' . esc_attr($value) . '" class="regular-text">';
+function form_sync_for_notion_database_url_callback() {
+    $value = get_option('form_sync_for_notion_database_url', '');
+    echo '<input type="text" name="form_sync_for_notion_database_url" value="' . esc_attr($value) . '" class="regular-text">';
 }

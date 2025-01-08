@@ -1,12 +1,12 @@
 <?php
-/* This file is used to handle the setup of the Notion Content plugin.  If the plugin does not have a valid API key and database URL, it will display a setup page.
+/* This file is used to handle the setup of the Form Sync for Notion plugin.  If the plugin does not have a valid API key and database URL, it will display a setup page.
 */
 
 // Check if the plugin is setup
-function notion_forms_is_setup() {
-    $notion_form_api_key = esc_attr(get_option('notion_form_api_key'));
-    $notion_form_database_url = esc_attr(get_option('notion_form_database_url'));
-    if( isset($notion_form_api_key) && $notion_form_api_key && isset($notion_form_database_url) && $notion_form_database_url) {
+function form_sync_for_notion_is_setup() {
+    $form_sync_for_notion_api_key = esc_attr(get_option('form_sync_for_notion_api_key'));
+    $form_sync_for_notion_database_url = esc_attr(get_option('form_sync_for_notion_database_url'));
+    if( isset($form_sync_for_notion_api_key) && $form_sync_for_notion_api_key && isset($form_sync_for_notion_database_url) && $form_sync_for_notion_database_url) {
         return true;
     }
     else {
@@ -16,7 +16,7 @@ function notion_forms_is_setup() {
 
 
 // Check to see if ID is a page or database
-function notion_forms_check_notion_config($api_key, $pageID) {
+function form_sync_for_notion_check_notion_config($api_key, $pageID) {
 
     // Check to see if ID is a page
     $results = array();
@@ -77,17 +77,22 @@ function notion_forms_check_notion_config($api_key, $pageID) {
 }
 
 // Display the setup page
-function notion_forms_setup_page() {
+function form_sync_for_notion_setup_page() {
     $page = "";
-    if(isset($_POST["notion_form_check_config"]) && sanitize_text_field(wp_unslash($_POST["notion_form_check_config"])) && isset($_POST["notion_form_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["notion_form_setup_page_form_nonce"])), 'notion_form_setup_page_form' )) {
-        if(isset($_POST["notion_form_api_key"])) {
-            $api_key = sanitize_text_field(wp_unslash($_POST["notion_form_api_key"]));
+    if(isset($_POST["form_sync_for_notion_check_config"]) && sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_check_config"])) && isset($_POST["form_sync_for_notion_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_setup_page_form_nonce"])), 'form_sync_for_notion_setup_page_form' )) {
+        if(isset($_POST["form_sync_for_notion_api_key"])) {
+            $api_key = sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_api_key"]));
         }
-        if(isset($_POST["notion_form_database_url"])) {
-            $database_url = sanitize_text_field(wp_unslash($_POST["notion_form_database_url"]));
+        if(isset($_POST["form_sync_for_notion_database_url"])) {
+            $database_url = sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_database_url"]));
         }
-        $pageID = notion_extract_database_id($database_url);
-        $results = notion_forms_check_notion_config($api_key, $pageID);
+
+
+        preg_match('/([a-f0-9]{32})/', $database_url, $matches);
+        $pageID= $matches[1] ?? '';
+
+
+        $results = form_sync_for_notion_check_notion_config($api_key, $pageID);
         switch($results["url_type"]) {
             case "Page":
                 // Check to see if there are child databases and then list them.  If there are not, then give an error message.  
@@ -100,11 +105,12 @@ function notion_forms_setup_page() {
                     $msg = "No databases found on the given URL";
                 }
                 break;
+
             case "Database":
                 // Success!  Save API Key and Database URL into database
                 $page = "success";
-                update_option('notion_form_api_key', sanitize_text_field(wp_unslash($_POST['notion_form_api_key'])));
-                update_option('notion_form_database_url', sanitize_text_field(wp_unslash($_POST['notion_form_database_url'])));
+                update_option('form_sync_for_notion_api_key', sanitize_text_field(wp_unslash($_POST['form_sync_for_notion_api_key'])));
+                update_option('form_sync_for_notion_database_url', sanitize_text_field(wp_unslash($_POST['form_sync_for_notion_database_url'])));
 
 
 
@@ -114,7 +120,7 @@ function notion_forms_setup_page() {
                 break;
         }
     }
-    include NOTION_FORMS_PATH . 'includes/admin/admin-header.php';
+    include FORM_SYNC_FOR_NOTION_PATH . 'includes/admin/admin-header.php';
 
     ?>
 
@@ -124,21 +130,21 @@ function notion_forms_setup_page() {
     </div>
     <?php endif; ?>
 
-    <div class="wrap" id="notion-forms-container">
-        <h1>Notion Forms Setup</h1>
+    <div class="wrap" id="form-sync-for-notion-container">
+        <h1>Form Sync for Notion Setup</h1>
         <?php 
         switch($page) {
 
             case "success":
-                notion_forms_setup_page_success(); 
+                form_sync_for_notion_setup_page_success(); 
                 break;
 
             case "database":
-                notion_forms_setup_page_choose_database($results["databases"]); 
+                form_sync_for_notion_setup_page_choose_database($results["databases"]); 
                 break;
 
             default:
-                notion_forms_setup_page_form(); 
+                form_sync_for_notion_setup_page_form(); 
                 break;
         }
         ?>
@@ -147,32 +153,32 @@ function notion_forms_setup_page() {
 }
 
 // Display the setup page form
-function notion_forms_setup_page_form() {
+function form_sync_for_notion_setup_page_form() {
     $api_key = "";
-    if(isset($_POST["notion_form_api_key"]) && isset($_POST["notion_form_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["notion_form_setup_page_form_nonce"])), 'notion_form_setup_page_form' )) {
-        $api_key = sanitize_text_field(wp_unslash($_POST["notion_form_api_key"]));
+    if(isset($_POST["form_sync_for_notion_api_key"]) && isset($_POST["form_sync_for_notion_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_setup_page_form_nonce"])), 'form_sync_for_notion_setup_page_form' )) {
+        $api_key = sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_api_key"]));
     }
     $database_url = "";
-    if(isset($_POST["notion_form_database_url"]) && isset($_POST["notion_form_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["notion_form_setup_page_form_nonce"])), 'notion_form_setup_page_form' )) {
-        $database_url = sanitize_text_field(wp_unslash($_POST["notion_form_database_url"]));
+    if(isset($_POST["form_sync_for_notion_database_url"]) && isset($_POST["form_sync_for_notion_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_setup_page_form_nonce"])), 'form_sync_for_notion_setup_page_form' )) {
+        $database_url = sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_database_url"]));
     }
     ?>
     <p>To get started, you need to enter your Notion API key and database URL.  You can find your API key in the <a href="https://www.notion.so/my-integrations" target="_blank">Notion Integrations</a> page.  Check out the <a href="https://everydaytech.tv/wp/notion-forms/documentation/getting-started/" target="_blank">Getting Started</a> guide for more information.</p>
         <form method="post" action="">
-        <input type="hidden" name="notion_form_check_config" value="1">
-        <?php wp_nonce_field( 'notion_form_setup_page_form', 'notion_form_setup_page_form_nonce' ); ?>
+        <input type="hidden" name="form_sync_for_notion_check_config" value="1">
+        <?php wp_nonce_field( 'form_sync_for_notion_setup_page_form', 'form_sync_for_notion_setup_page_form_nonce' ); ?>
 
         <table class="form-table">
             <tr valign="top">
                 <th scope="row">
                     Notion API Key
                 </th>
-                <td><input type="text" name="notion_form_api_key" value="<?php echo esc_attr($api_key); ?>" class="regular-text" /></td>
+                <td><input type="text" name="form_sync_for_notion_api_key" value="<?php echo esc_attr($api_key); ?>" class="regular-text" /></td>
             </tr>
             <tr valign="top">
                 <th scope="row">Notion Database URL
                 </th>
-                <td><input type="text" name="notion_form_database_url" value="<?php echo esc_attr($database_url); ?>" class="regular-text" /></td>
+                <td><input type="text" name="form_sync_for_notion_database_url" value="<?php echo esc_attr($database_url); ?>" class="regular-text" /></td>
             </tr>
         </table>
         <?php submit_button(); ?>
@@ -181,26 +187,26 @@ function notion_forms_setup_page_form() {
 }
 
 // Display the setup page choose database
-function notion_forms_setup_page_choose_database($databases = array()) {
+function form_sync_for_notion_setup_page_choose_database($databases = array()) {
     $api_key = "";
-    if(isset($_POST["notion_form_api_key"]) && isset($_POST["notion_form_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["notion_form_setup_page_form_nonce"])), 'notion_form_setup_page_form' )) {
-        $api_key = sanitize_text_field(wp_unslash($_POST["notion_form_api_key"]));
+    if(isset($_POST["form_sync_for_notion_api_key"]) && isset($_POST["form_sync_for_notion_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_setup_page_form_nonce"])), 'form_sync_for_notion_setup_page_form' )) {
+        $api_key = sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_api_key"]));
     }
     $database_url = "";
-    if(isset($_POST["notion_form_database_url"]) && isset($_POST["notion_form_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["notion_form_setup_page_form_nonce"])), 'notion_form_setup_page_form' )) {
-        $database_url = sanitize_text_field(wp_unslash($_POST["notion_form_database_url"]));
+    if(isset($_POST["form_sync_for_notion_database_url"]) && isset($_POST["form_sync_for_notion_setup_page_form_nonce"]) && wp_verify_nonce( sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_setup_page_form_nonce"])), 'form_sync_for_notion_setup_page_form' )) {
+        $database_url = sanitize_text_field(wp_unslash($_POST["form_sync_for_notion_database_url"]));
     }
     ?>
         <form method="post" action="">
-        <input type="hidden" name="notion_form_check_config" value="1">
-        <input type="hidden" name="notion_form_api_key" value="<?php echo esc_attr($api_key); ?>">
-        <?php wp_nonce_field( 'notion_form_setup_page_form', 'notion_form_setup_page_form_nonce' ); ?>
+        <input type="hidden" name="form_sync_for_notion_check_config" value="1">
+        <input type="hidden" name="form_sync_for_notion_api_key" value="<?php echo esc_attr($api_key); ?>">
+        <?php wp_nonce_field( 'form_sync_for_notion_setup_page_form', 'form_sync_for_notion_setup_page_form_nonce' ); ?>
         <table class="form-table">
             <tr valign="top">
                 <th scope="row">Notion Database URL
                 </th>
                 <td>
-                <select name="notion_form_database_url">
+                <select name="form_sync_for_notion_database_url">
                 <?php foreach($databases AS $database) : ?>
                     <option value="https:www.notion.so/<?php echo esc_attr($database["id"]); ?>"><?php echo esc_html($database["name"]); ?></option>
                 <?php endforeach; ?>
@@ -215,7 +221,7 @@ function notion_forms_setup_page_choose_database($databases = array()) {
 
 
 // Display the setup page success
-function notion_forms_setup_page_success() {
+function form_sync_for_notion_setup_page_success() {
     ?>
 <div class="wrap">
     <h1>🎉 Congratulations!</h1>
@@ -237,7 +243,7 @@ function notion_forms_setup_page_success() {
         </div>
     </div>
     <p>
-        <a href="<?php echo esc_url(admin_url('admin.php?page=notion-forms')); ?>" class="button button-primary">Go to the Notion Forms Page</a>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=form-sync-for-notion')); ?>" class="button button-primary">Go to the Form Sync for Notion Page</a>
     </p>
 </div>
 
