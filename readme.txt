@@ -1,4 +1,4 @@
-=== Notion Forms ===
+=== Form Sync for Notion ===
 Contributors: patchang
 Tags: notion, forms, database, integration, form-builder
 Requires at least: 5.0
@@ -12,7 +12,7 @@ Integrate Notion databases as customizable forms in WordPress. Connect your Noti
 
 == Description ==
 
-Notion Forms allows you to transform your Notion databases into fully functional WordPress forms. This plugin creates a bridge between your WordPress site and Notion workspace, enabling you to collect form submissions directly into your Notion databases.
+Form Sync for Notion allows you to transform your Notion databases into fully functional WordPress forms. This plugin creates a bridge between your WordPress site and Notion workspace, enabling you to collect form submissions directly into your Notion databases.
 
 = Key Features =
 
@@ -36,7 +36,7 @@ Notion Forms allows you to transform your Notion databases into fully functional
 
 1. Upload the plugin files to the `/wp-content/plugins/notion-forms` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
-3. Go to the Notion Forms settings page to configure your Notion integration
+3. Go to the Form Sync for Notion settings page to configure your Notion integration
 4. Create your first form by connecting to a Notion database
 
 == Frequently Asked Questions ==
