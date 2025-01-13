@@ -20,6 +20,46 @@ function form_sync_for_notion_shortcode($no_styles = false) {
         if (isset($_POST['submission_token']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['submission_token'])), 'form_sync_for_notion_submission')) {
             $form_message = '<div class="error">Invalid submission. Please try again.</div>';
         } else {
+            // Verify ReCaptcha if enabled
+            $recaptcha_enabled = get_option('form_sync_for_notion_enable_recaptcha', false);
+            if ($recaptcha_enabled) {
+                $recaptcha_secret = get_option('form_sync_for_notion_recaptcha_secret_key', '');
+                $recaptcha_version = get_option('form_sync_for_notion_recaptcha_version', 'v2');
+                $recaptcha_response = isset($_POST['g-recaptcha-response']) ? sanitize_text_field($_POST['g-recaptcha-response']) : '';
+                
+                if (empty($recaptcha_response)) {
+                    $form_message = '<div class="error">Please complete the ReCaptcha verification.</div>';
+                    goto output_form;
+                }
+
+                // Verify ReCaptcha response
+                $verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+                $response = wp_remote_post($verify_url, [
+                    'body' => [
+                        'secret' => $recaptcha_secret,
+                        'response' => $recaptcha_response
+                    ]
+                ]);
+
+                if (is_wp_error($response)) {
+                    $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
+                    goto output_form;
+                }
+
+                $body = wp_remote_retrieve_body($response);
+                $result = json_decode($body, true);
+
+                if (!$result['success']) {
+                    $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
+                    goto output_form;
+                }
+
+                if ($recaptcha_version === 'v3' && (!isset($result['score']) || $result['score'] < 0.5)) {
+                    $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
+                    goto output_form;
+                }
+            }
+
             // Fetch active fields for submission
             $fields = get_posts(array(
                 'post_type' => 'notion_form_field',
@@ -50,6 +90,21 @@ function form_sync_for_notion_shortcode($no_styles = false) {
             } else {
                 $form_message = '<div class="error">' . esc_html($submission_result) . '</div>';
             }
+        }
+    }
+
+output_form:
+    // Get ReCaptcha settings
+    $recaptcha_enabled = get_option('form_sync_for_notion_enable_recaptcha', false);
+    $recaptcha_site_key = get_option('form_sync_for_notion_recaptcha_site_key', '');
+    $recaptcha_version = get_option('form_sync_for_notion_recaptcha_version', 'v2');
+
+    // Add ReCaptcha script if enabled
+    if ($recaptcha_enabled) {
+        if ($recaptcha_version === 'v2') {
+            wp_enqueue_script('recaptcha-v2', 'https://www.google.com/recaptcha/api.js', array(), null, true);
+        } else {
+            wp_enqueue_script('recaptcha-v3', 'https://www.google.com/recaptcha/api.js?render=' . esc_attr($recaptcha_site_key), array(), null, true);
         }
     }
 
@@ -92,11 +147,19 @@ function form_sync_for_notion_shortcode($no_styles = false) {
         $label = esc_html($field_label ? $field_label : $field->post_title);
         $field_id = esc_attr($field->ID);
 
+        // Get previously submitted value if it exists
+        $submitted_value = isset($_POST[$field_id]) ? stripslashes($_POST[$field_id]) : '';
+        if ($field_type !== 'checkbox' && $field_type !== 'multi_select' && 
+            $field_type !== 'rich_text' && $field_type !== 'text') {
+            $submitted_value = esc_attr($submitted_value);
+        }
+
         $html .= '<div class="form-group">';
         
         if ($field_type === 'checkbox') {
             $html .= "<div class='checkbox-wrapper'>";
-            $html .= "<input type='checkbox' id='$field_id' name='$field_id' value='1' $required class='form-control-checkbox' />";
+            $checked = !empty($submitted_value) ? 'checked' : '';
+            $html .= "<input type='checkbox' id='$field_id' name='$field_id' value='1' $required $checked class='form-control-checkbox' />";
             $html .= "<label for='$field_id'>$label</label>";
             $html .= "</div>";
         } else {
@@ -112,8 +175,9 @@ function form_sync_for_notion_shortcode($no_styles = false) {
                         $html .= "<div class='radio-group'>";
                         foreach($arrOptions as $option) {
                             $option_id = esc_attr($field_id . '_' . sanitize_title($option));
+                            $checked = $submitted_value === $option ? 'checked' : '';
                             $html .= "<div class='radio-option'>";
-                            $html .= "<input type='radio' id='$option_id' name='$field_id' value='$option' $required class='form-control-radio'>";
+                            $html .= "<input type='radio' id='$option_id' name='$field_id' value='$option' $required $checked class='form-control-radio'>";
                             $html .= "<label for='$option_id'>$option</label>";
                             $html .= "</div>";
                         }
@@ -121,7 +185,8 @@ function form_sync_for_notion_shortcode($no_styles = false) {
                     } else {
                         $select_options = "";
                         foreach($arrOptions as $option) {
-                            $select_options .= "<option value='$option'>$option</option>";
+                            $selected = $submitted_value === $option ? 'selected' : '';
+                            $select_options .= "<option value='$option' $selected>$option</option>";
                         }
                         $html .= "<select id='$field_id' name='$field_id' $required class='form-control'>$select_options</select>";
                     }
@@ -129,11 +194,13 @@ function form_sync_for_notion_shortcode($no_styles = false) {
                     
                 case 'multi_select':
                     $arrOptions = explode("|", $field_attr);
+                    $submitted_values = isset($_POST[$field_id]) ? array_map('stripslashes', (array)$_POST[$field_id]) : array();
                     $html .= "<div class='checkbox-group'>";
                     foreach($arrOptions as $option) {
                         $option_id = esc_attr($field_id . '_' . sanitize_title($option));
+                        $checked = in_array($option, $submitted_values) ? 'checked' : '';
                         $html .= "<div class='checkbox-option'>";
-                        $html .= "<input type='checkbox' id='$option_id' name='{$field_id}[]' value='$option' class='form-control-checkbox'>";
+                        $html .= "<input type='checkbox' id='$option_id' name='{$field_id}[]' value='$option' $checked class='form-control-checkbox'>";
                         $html .= "<label for='$option_id'>$option</label>";
                         $html .= "</div>";
                     }
@@ -142,30 +209,50 @@ function form_sync_for_notion_shortcode($no_styles = false) {
                     
                 case 'rich_text':
                     if ($field_attr === 'textarea') {
-                        $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'></textarea>";
+                        $html .= "<textarea id='$field_id' name='$field_id' $required class='form-control'>" . 
+                            wp_specialchars_decode($submitted_value, ENT_QUOTES) . "</textarea>";
                     } else {
-                        $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
+                        $html .= "<input type='text' id='$field_id' name='$field_id' value='" . 
+                            wp_specialchars_decode($submitted_value, ENT_QUOTES) . "' $required class='form-control' />";
                     }
                     break;
                     
                 case 'phone_number':
-                    $html .= "<input type='number' id='$field_id' name='$field_id' $required class='form-control' />";
+                    $html .= "<input type='tel' id='$field_id' name='$field_id' value='$submitted_value' $required class='form-control' />";
                     break;
                     
                 case 'number':
-                    $html .= "<input type='number' step='any' id='$field_id' name='$field_id' $required class='form-control' />";
+                    $html .= "<input type='number' step='any' id='$field_id' name='$field_id' value='$submitted_value' $required class='form-control' />";
                     break;
                     
                 case 'date':
-                    $html .= "<input type='date' id='$field_id' name='$field_id' $required class='form-control' />";
+                    $html .= "<input type='date' id='$field_id' name='$field_id' value='$submitted_value' $required class='form-control' />";
                     break;
                     
                 default:
-                    $html .= "<input type='text' id='$field_id' name='$field_id' $required class='form-control' />";
+                    $html .= "<input type='text' id='$field_id' name='$field_id' value='$submitted_value' $required class='form-control' />";
                     break;
             }
         }
 
+        $html .= '</div>';
+    }
+
+    // Add ReCaptcha before submit button if enabled
+    if ($recaptcha_enabled) {
+        $html .= '<div class="form-group">';
+        if ($recaptcha_version === 'v2') {
+            $html .= '<div class="g-recaptcha" data-sitekey="' . esc_attr($recaptcha_site_key) . '"></div>';
+        } else {
+            $html .= '<input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">';
+            $html .= '<script>
+                grecaptcha.ready(function() {
+                    grecaptcha.execute("' . esc_js($recaptcha_site_key) . '", {action: "submit"}).then(function(token) {
+                        document.getElementById("g-recaptcha-response").value = token;
+                    });
+                });
+            </script>';
+        }
         $html .= '</div>';
     }
 
