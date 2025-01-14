@@ -1,12 +1,13 @@
 <?php
 // Add a shortcode to generate a form based on the local "notion_forms" database
 
-function form_sync_for_notion_shortcode($no_styles = false) {
+function form_sync_for_notion_shortcode($no_styles = false, $no_recaptcha = false) {
     // Start output buffering to prevent headers already sent error
     ob_start();
     
     $form_message = '';
     $submission_token = wp_create_nonce('form_sync_for_notion_submission');
+    $should_process_form = true;
     
     // Check if this is a successful submission redirect
     if (isset($_GET['submission']) && $_GET['submission'] === 'success') {
@@ -17,49 +18,53 @@ function form_sync_for_notion_shortcode($no_styles = false) {
     // Handle form submission before any output
     if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['form-sync-for-notion-submit'])) {
         // Verify nonce
-        if (isset($_POST['submission_token']) && !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['submission_token'])), 'form_sync_for_notion_submission')) {
+        if (!isset($_POST['submission_token']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['submission_token'])), 'form_sync_for_notion_submission')) {
             $form_message = '<div class="error">Invalid submission. Please try again.</div>';
-        } else {
-            // Verify ReCaptcha if enabled
+            $should_process_form = false;
+        }
+
+        // Verify ReCaptcha if enabled
+        if ($should_process_form) {
             $recaptcha_enabled = get_option('form_sync_for_notion_enable_recaptcha', false);
             if ($recaptcha_enabled) {
                 $recaptcha_secret = get_option('form_sync_for_notion_recaptcha_secret_key', '');
                 $recaptcha_version = get_option('form_sync_for_notion_recaptcha_version', 'v2');
-                $recaptcha_response = isset($_POST['g-recaptcha-response']) ? sanitize_text_field($_POST['g-recaptcha-response']) : '';
+                $recaptcha_response = isset($_POST['g-recaptcha-response']) ? sanitize_text_field(wp_unslash($_POST['g-recaptcha-response'])) : '';
                 
                 if (empty($recaptcha_response)) {
                     $form_message = '<div class="error">Please complete the ReCaptcha verification.</div>';
-                    goto output_form;
-                }
+                    $should_process_form = false;
+                } else {
+                    // Verify ReCaptcha response
+                    $verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+                    $response = wp_remote_post($verify_url, [
+                        'body' => [
+                            'secret' => $recaptcha_secret,
+                            'response' => $recaptcha_response
+                        ]
+                    ]);
 
-                // Verify ReCaptcha response
-                $verify_url = 'https://www.google.com/recaptcha/api/siteverify';
-                $response = wp_remote_post($verify_url, [
-                    'body' => [
-                        'secret' => $recaptcha_secret,
-                        'response' => $recaptcha_response
-                    ]
-                ]);
+                    if (is_wp_error($response)) {
+                        $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
+                        $should_process_form = false;
+                    } else {
+                        $body = wp_remote_retrieve_body($response);
+                        $result = json_decode($body, true);
 
-                if (is_wp_error($response)) {
-                    $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
-                    goto output_form;
-                }
-
-                $body = wp_remote_retrieve_body($response);
-                $result = json_decode($body, true);
-
-                if (!$result['success']) {
-                    $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
-                    goto output_form;
-                }
-
-                if ($recaptcha_version === 'v3' && (!isset($result['score']) || $result['score'] < 0.5)) {
-                    $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
-                    goto output_form;
+                        if (!$result['success']) {
+                            $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
+                            $should_process_form = false;
+                        } elseif ($recaptcha_version === 'v3' && (!isset($result['score']) || $result['score'] < 0.5)) {
+                            $form_message = '<div class="error">ReCaptcha verification failed. Please try again.</div>';
+                            $should_process_form = false;
+                        }
+                    }
                 }
             }
+        }
 
+        // Process form submission if all validations pass
+        if ($should_process_form) {
             // Fetch active fields for submission
             $fields = get_posts(array(
                 'post_type' => 'notion_form_field',
@@ -93,18 +98,17 @@ function form_sync_for_notion_shortcode($no_styles = false) {
         }
     }
 
-output_form:
     // Get ReCaptcha settings
     $recaptcha_enabled = get_option('form_sync_for_notion_enable_recaptcha', false);
     $recaptcha_site_key = get_option('form_sync_for_notion_recaptcha_site_key', '');
     $recaptcha_version = get_option('form_sync_for_notion_recaptcha_version', 'v2');
 
     // Add ReCaptcha script if enabled
-    if ($recaptcha_enabled) {
+    if ($recaptcha_enabled && !$no_recaptcha) {
         if ($recaptcha_version === 'v2') {
             wp_enqueue_script('recaptcha-v2', 'https://www.google.com/recaptcha/api.js', array(), null, true);
         } else {
-            wp_enqueue_script('recaptcha-v3', 'https://www.google.com/recaptcha/api.js?render=' . esc_attr($recaptcha_site_key), array(), null, true);
+            wp_enqueue_script('recaptcha-v3', 'https://www.google.com/recaptcha/api.js?render=' . esc_attr($recaptcha_site_key) . '&onload=onloadRecaptcha', array(), null, true);
         }
     }
 
@@ -148,12 +152,11 @@ output_form:
         $field_id = esc_attr($field->ID);
 
         // Get previously submitted value if it exists
-        $submitted_value = isset($_POST[$field_id]) ? stripslashes($_POST[$field_id]) : '';
+        $submitted_value = isset($_POST[$field_id]) ? stripslashes(sanitize_text_field(wp_unslash($_POST[$field_id]))) : '';
         if ($field_type !== 'checkbox' && $field_type !== 'multi_select' && 
             $field_type !== 'rich_text' && $field_type !== 'text') {
             $submitted_value = esc_attr($submitted_value);
         }
-
         $html .= '<div class="form-group">';
         
         if ($field_type === 'checkbox') {
@@ -194,7 +197,12 @@ output_form:
                     
                 case 'multi_select':
                     $arrOptions = explode("|", $field_attr);
-                    $submitted_values = isset($_POST[$field_id]) ? array_map('stripslashes', (array)$_POST[$field_id]) : array();
+                    $submitted_values = isset($_POST[$field->ID]) ? array_map('sanitize_text_field', (array)wp_unslash($_POST[$field->ID])) : array();
+
+
+
+
+
                     $html .= "<div class='checkbox-group'>";
                     foreach($arrOptions as $option) {
                         $option_id = esc_attr($field_id . '_' . sanitize_title($option));
@@ -239,18 +247,20 @@ output_form:
     }
 
     // Add ReCaptcha before submit button if enabled
-    if ($recaptcha_enabled) {
+    if ($recaptcha_enabled && !$no_recaptcha) {
         $html .= '<div class="form-group">';
         if ($recaptcha_version === 'v2') {
             $html .= '<div class="g-recaptcha" data-sitekey="' . esc_attr($recaptcha_site_key) . '"></div>';
         } else {
             $html .= '<input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">';
             $html .= '<script>
-                grecaptcha.ready(function() {
-                    grecaptcha.execute("' . esc_js($recaptcha_site_key) . '", {action: "submit"}).then(function(token) {
-                        document.getElementById("g-recaptcha-response").value = token;
+                window.onloadRecaptcha = function() {
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute("' . esc_js($recaptcha_site_key) . '", {action: "submit"}).then(function(token) {
+                            document.getElementById("g-recaptcha-response").value = token;
+                        });
                     });
-                });
+                }
             </script>';
         }
         $html .= '</div>';
@@ -294,10 +304,10 @@ function form_sync_for_notion_handle_submission($fields, $form_data) {
         if (isset($form_data[$field->ID])) {
 
             if($field_type == "textarea") {
-                $value = sanitize_textarea_field($form_data[$field->ID]);
+                $value = stripslashes(sanitize_textarea_field($form_data[$field->ID]));
             }
             else {
-                $value = sanitize_text_field($form_data[$field->ID]);
+                $value = stripslashes(sanitize_text_field($form_data[$field->ID]));
             }
 
             // Handle different Notion field types

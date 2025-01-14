@@ -99,7 +99,7 @@
     margin: 0;
     padding: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 9999;
+    z-index: 9000;
 }
 .form-sync-for-notion-header-inner {
     max-width: 100%; /* Ensure it spans the full content width */

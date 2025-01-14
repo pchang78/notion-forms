@@ -63,14 +63,11 @@ function form_sync_for_notion_styles_page() {
     <form>
 <textarea class="hidden" id="ai_prompt">
 Given the following html form code:
-<?php echo esc_html(str_replace(">", "&gt;", str_replace("<", "&lt;", form_sync_for_notion_shortcode(true)))); ?>
+<?php echo esc_html(str_replace(">", "&gt;", str_replace("<", "&lt;", form_sync_for_notion_shortcode(true, true)))); ?>
 
 </textarea>
 <button id="copyButton" type="button">Copy Prompt to Clipboard</button>
-
-
 </form>
-
 
     </div>
 
