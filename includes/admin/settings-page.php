@@ -46,6 +46,7 @@ add_action('admin_enqueue_scripts', 'form_sync_for_notion_admin_scripts');
 
 // Register settings for the plugin.
 function form_sync_for_notion_register_settings() {
+    // Define settings arguments
     add_settings_section(
         'form_sync_for_notion_main_settings',
         'Main Settings',
@@ -69,19 +70,17 @@ function form_sync_for_notion_register_settings() {
         'form_sync_for_notion_main_settings'
     );
 
-    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_api_key', [
-        'sanitize_callback' => 'sanitize_text_field',
-        'type' => 'string',
-        'show_in_rest' => false,
-        'default' => '',
-    ]);
+    register_setting(
+        'form_sync_for_notion_settings',
+        'form_sync_for_notion_api_key',
+        'sanitize_text_field'
+    );
 
-    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_database_url', [
-        'sanitize_callback' => 'esc_url_raw',
-        'type' => 'string',
-        'show_in_rest' => false,
-        'default' => '',
-    ]);
+    register_setting(
+        'form_sync_for_notion_settings',
+        'form_sync_for_notion_database_url',
+        'esc_url_raw'
+    );
 
     // ReCaptcha Settings
     add_settings_section(
@@ -123,33 +122,29 @@ function form_sync_for_notion_register_settings() {
         'form_sync_for_notion_recaptcha_settings'
     );
 
-    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_enable_recaptcha', [
-        'sanitize_callback' => 'rest_sanitize_boolean',
-        'type' => 'boolean',
-        'show_in_rest' => false,
-        'default' => false,
-    ]);
+    register_setting(
+        'form_sync_for_notion_settings',
+        'form_sync_for_notion_enable_recaptcha',
+        'rest_sanitize_boolean'
+    );
 
-    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_recaptcha_site_key', [
-        'sanitize_callback' => 'sanitize_text_field',
-        'type' => 'string',
-        'show_in_rest' => false,
-        'default' => '',
-    ]);
+    register_setting(
+        'form_sync_for_notion_settings',
+        'form_sync_for_notion_recaptcha_site_key',
+        'sanitize_text_field'
+    );
 
-    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_recaptcha_secret_key', [
-        'sanitize_callback' => 'sanitize_text_field',
-        'type' => 'string',
-        'show_in_rest' => false,
-        'default' => '',
-    ]);
+    register_setting(
+        'form_sync_for_notion_settings',
+        'form_sync_for_notion_recaptcha_secret_key',
+        'sanitize_text_field'
+    );
 
-    register_setting('form_sync_for_notion_settings', 'form_sync_for_notion_recaptcha_version', [
-        'sanitize_callback' => 'sanitize_text_field',
-        'type' => 'string',
-        'show_in_rest' => false,
-        'default' => 'v2',
-    ]);
+    register_setting(
+        'form_sync_for_notion_settings',
+        'form_sync_for_notion_recaptcha_version',
+        'sanitize_text_field'
+    );
 }
 add_action('admin_init', 'form_sync_for_notion_register_settings');
 
